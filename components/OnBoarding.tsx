@@ -1,47 +1,106 @@
-import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native'
+import { View, Text, StyleSheet, Pressable, FlatList, Dimensions } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useSpring, animated } from '@react-spring/native';
 import Carousel from 'react-native-reanimated-carousel';
 import LottieView from 'lottie-react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useOnboardingPersisStore } from '@/store/useOnboarding';
+import {
+    configureReanimatedLogger,
+    ReanimatedLogLevel,
+} from 'react-native-reanimated';
 
-
+configureReanimatedLogger({
+    level: ReanimatedLogLevel.warn,
+    strict: true,
+});
 
 const dotPage = ['dot0', 'dot1', 'dot2']
 const imagePage = ['image0', 'image1', 'image2']
-
 const headerText = ['Plan your schedules easily', 'Make your day become more productive ', 'Manager all your daily tasks']
-
 const contentText = ['Planing your routine and it will become a habit that lead you to sucess path', 'Make your day become more productive and you will have more time to do what you love', 'Manager all your daily tasks and you will have more time to do what you love']
 
 
-type Props = {}
 
-export default function OnBoarding(props: Props) {
-    const [isPress, setIsPress] = useState<boolean>(false)
+export default function OnBoarding() {
+    const [isReady, setIsReady] = useState(false);
+
+    const { isFinished, setFinished } = useOnboardingPersisStore()
+
+
     const [currentPage, setCurrentPage] = useState<number>(0)
+    const scale = useSharedValue(1)
+    const translateYInfo = useSharedValue<any>("100%")
     const carouselRef = useRef<any>(null)
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const containerTop = useSharedValue<any>(0)
+    const heroOpacity = useSharedValue(0)
 
+    const {height} = Dimensions.get('window')
 
-
-
-
-    const pressAnimation = useSpring({
-        scale: isPress ? 1.2 : 1,
-        config: {
-            tension: 1000,
-            friction: 30,
-            mass: 0.2,
+    const containerTopStyle = useAnimatedStyle(() => {
+        return {
+            top: containerTop.value,
         }
     })
 
-    const pressHandler = () => {
-        setIsPress(true)
-        if (currentPage === 2) {
-            setCurrentPage(0)
+
+    const scaleStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: scale.value }],
+        }
+    })
+
+
+    const translateYStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: translateYInfo.value }],
+        }
+    })
+
+
+    const heroOpacityStyle = useAnimatedStyle(() => {
+        return {
+            opacity: heroOpacity.value,
+        }
+    })
+
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsReady(true);
+        }, 200);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    useEffect(() => {
+        if (isReady) {
+            translateYInfo.value = withSpring(0, { damping: 100, stiffness: 100 })
+            heroOpacity.value = withSpring(1, { damping: 100, stiffness: 100 })
+
+        }
+    }, [isReady]);
+
+    const pressHandler = (direction: 'left' | 'right' = 'right') => {
+        clearTimeout(timerRef.current!)
+        scale.value = withSpring(1.2, { damping: 10, stiffness: 100 })
+        if (currentPage === 2 && direction === 'right') {
+            containerTop.value = withSpring(height, { damping: 10, stiffness: 100 })
+            timerRef.current = setTimeout(() => {
+                setFinished()
+            }, 500)
             return
         }
-        setCurrentPage(currentPage + 1)
+        if (currentPage === 0 && direction === 'left') {
+            return
+        }
+        direction === 'right' ? setCurrentPage(currentPage + 1) : setCurrentPage(currentPage - 1)
+    }
+
+    const pressOutHandler = () => {
+        scale.value = withSpring(1, { damping: 10, stiffness: 100 })
     }
 
 
@@ -51,7 +110,6 @@ export default function OnBoarding(props: Props) {
 
 
 
-    const AnimatedView = animated(View)
 
     const renderItem = ({ index }: { index: number }) => {
         return (
@@ -66,40 +124,43 @@ export default function OnBoarding(props: Props) {
 
 
     return (
-        <View style={[styles.root_container]}>
+        <Animated.View style={[styles.root_container, containerTopStyle]}>
             <View style={styles.wrapper}>
-                <View style={styles.skip_button}>
+                <Animated.View style={[styles.skip_button, heroOpacityStyle]}>
                     <Pressable
                         style={{ width: '100%', height: '100%', justifyContent: 'flex-end', alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 8 }}
+                        onTouchStart={() => setFinished()}
                     >
                         <Text style={styles.skip_text}>Skip</Text>
                         <FontAwesome6 name="chevron-right" size={14} color="white" />
                     </Pressable>
-                </View>
+                </Animated.View>
                 <View style={styles.onboarding_item}>
-                    <Carousel
-                        width={400}
-                        style={{ marginTop: 160 }}
-                        enabled={false}
-                        loop={false}
-                        height={400}
-                        data={imagePage}
-                        ref={carouselRef}
-                        scrollAnimationDuration={1000}
-                        defaultIndex={0}
-                        renderItem={({ index }) => (
-                            <View
-                                style={{
-                                    flex: 1,
-                                }}
-                            >
-                                {index === 0 && <LottieView source={require(`@/assets/animationFiles/animation-1.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
-                                {index === 1 && <LottieView source={require(`@/assets/animationFiles/animation-2.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
-                                {index === 2 && <LottieView source={require(`@/assets/animationFiles/animation-3.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
-                            </View>
-                        )}
-                    />
-                    <View style={styles.onboarding_item_info}>
+                    <Animated.View style={[{ width: '100%', height: 520 }, heroOpacityStyle]}>
+                        <Carousel
+                            width={400}
+                            enabled={false}
+                            loop={false}
+                            height={400}
+                            data={imagePage}
+                            ref={carouselRef}
+                            style={{ marginTop: "25%", marginLeft: 'auto', marginRight: 'auto' }}
+                            scrollAnimationDuration={1000}
+                            defaultIndex={0}
+                            renderItem={({ index }) => (
+                                <View
+                                    style={{
+                                        flex: 1,
+                                    }}
+                                >
+                                    {index === 0 && <LottieView source={require(`@/assets/animationFiles/animation-1.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
+                                    {index === 1 && <LottieView source={require(`@/assets/animationFiles/animation-2.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
+                                    {index === 2 && <LottieView source={require(`@/assets/animationFiles/animation-3.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
+                                </View>
+                            )}
+                        />
+                    </Animated.View>
+                    <Animated.View style={[styles.onboarding_item_info, translateYStyle]}>
                         <Text style={styles.onboarding_item_header}>{headerText[currentPage]}</Text>
                         <Text style={styles.onboarding_item_content}>{contentText[currentPage]}</Text>
                         <View style={styles.onboarding_item_count_wrap}>
@@ -112,21 +173,34 @@ export default function OnBoarding(props: Props) {
                                 contentContainerStyle={{ justifyContent: 'center', alignContent: 'center', display: 'flex', flexDirection: 'row', gap: 4, width: '100%' }}
                             />
                         </View>
-                        <View style={{ width: '100%', height: 60, display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', position: 'absolute', bottom: 80, left: 32 }}>
-                            <AnimatedView style={[styles.onboarding_item_button, { transform: [{ scale: pressAnimation.scale }] }]}>
+                        <View style={{ width: '100%', height: 60, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', position: 'absolute', bottom: 80, left: 32 }}>
+                            {
+                                currentPage !== 0 &&
+                                <Animated.View style={[styles.onboarding_item_button, scaleStyle, { backgroundColor: "#FCC760" }]}>
+                                    <Pressable
+                                        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', transform: [{ rotate: '180deg' }] }}
+                                        onPressIn={() => pressHandler('left')}
+                                        onPressOut={pressOutHandler}
+                                    >
+                                        <FontAwesome6 name="arrow-right" size={24} color="white" />
+                                    </Pressable>
+                                </Animated.View>
+
+                            }
+                            <Animated.View style={[styles.onboarding_item_button, scaleStyle, { marginLeft: 'auto' }]}>
                                 <Pressable
-                                    style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
-                                    onPressIn={pressHandler}
-                                    onPressOut={() => setIsPress(false)}
+                                    style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 8 }}
+                                    onPressIn={() => pressHandler('right')}
+                                    onPressOut={pressOutHandler}
                                 >
                                     <FontAwesome6 name="arrow-right" size={24} color="white" />
                                 </Pressable>
-                            </AnimatedView>
+                            </Animated.View>
                         </View>
-                    </View>
+                    </Animated.View>
                 </View>
             </View>
-        </View >
+        </Animated.View >
     )
 }
 
