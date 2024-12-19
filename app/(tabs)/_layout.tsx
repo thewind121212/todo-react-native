@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useOnboardingPersisStore } from '@/store/useOnboarding';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Octicons from '@expo/vector-icons/Octicons';
 
 
 export default function TabLayout() {
@@ -10,7 +10,10 @@ export default function TabLayout() {
             screenOptions={{
                 tabBarActiveTintColor: '#ffd33d',
                 headerStyle: {
-                    backgroundColor: '#25292e',
+                    backgroundColor: '#1A182C',
+                },
+                headerTitleStyle:{
+                    display: 'none'
                 },
                 headerShadowVisible: false,
                 headerTintColor: '#fff',
@@ -20,7 +23,14 @@ export default function TabLayout() {
                     paddingTop: 15,
                     borderTopColor: 'transparent',
                 },
-                headerShown: false,
+                headerShown: true,
+                headerRight: () => {
+                    return  <FontAwesome6 name="bell" size={24} color="#fff" style={{ marginRight: 20 }}  />
+                },
+                headerLeft: () => {
+                    return  <FontAwesome6 name="bars" size={24} color="#fff" style={{ marginLeft: 20 }} />
+                    
+                }
             }}
         >
             <Tabs.Screen
@@ -28,7 +38,7 @@ export default function TabLayout() {
                 options={{
                     tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                        <Octicons name="home" size={24} color={color} />
                     ),
                 }}
             />
@@ -37,7 +47,7 @@ export default function TabLayout() {
                 options={{
                     tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                        <Octicons name="tasklist" size={24} color={color}  />
                     ),
                 }}
             />
@@ -46,7 +56,7 @@ export default function TabLayout() {
                 options={{
                     tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                        <Octicons name="checklist" size={24} color={color} />
                     ),
                 }}
             />

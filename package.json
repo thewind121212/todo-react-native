@@ -17,6 +17,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
     "@lottiefiles/dotlottie-react": "^0.6.5",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
     "expo": "~52.0.18",
@@ -43,12 +44,13 @@
     "react-native-reanimated-carousel": "^4.0.0-canary.22",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.1.0",
+    "react-native-svg": "15.8.0",
+    "react-native-svg-transformer": "^1.5.0",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "react-spring": "^9.7.5",
     "tailwindcss": "^3.4.16",
-    "zustand": "^5.0.2",
-    "@react-native-async-storage/async-storage": "1.23.1"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
