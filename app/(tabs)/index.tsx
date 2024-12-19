@@ -12,13 +12,13 @@ const Index = () => {
 
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'red' }}>
+    <View style={{ flex: 1, backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       {
         <Modal style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }} transparent={true} visible={!isFinished}>
           <OnBoarding />
         </Modal>
       }
-      <Text>index</Text>
+      <Text style={{fontSize: 30 , color: 'white'}}>index</Text>
     </View>
   )
 }

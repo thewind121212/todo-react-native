@@ -15,7 +15,10 @@ export default function TabLayout() {
                 headerShadowVisible: false,
                 headerTintColor: '#fff',
                 tabBarStyle: {
-                    backgroundColor: '#25292e',
+                    backgroundColor: '#1A182C',
+                    display: 'flex',
+                    paddingTop: 15,
+                    borderTopColor: 'transparent',
                 },
                 headerShown: false,
             }}
@@ -23,7 +26,25 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="index"
                 options={{
-                    title: 'Home',
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="groupTask"
+                options={{
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="allTasks"
+                options={{
+                    tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
                     ),
