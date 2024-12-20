@@ -19,9 +19,9 @@ export default function TabLayout() {
                 headerTintColor: '#fff',
                 tabBarStyle: {
                     backgroundColor: '#1A182C',
-                    display: 'flex',
-                    paddingTop: 15,
                     borderTopColor: 'transparent',
+                    display: 'flex',
+                    borderTopWidth: 0,
                 },
                 headerShown: true,
                 headerRight: () => {

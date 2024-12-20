@@ -1,4 +1,4 @@
-import { View, Text, Modal, StyleSheet, Pressable } from 'react-native'
+import { View, Text, Modal, StyleSheet, Pressable, Dimensions } from 'react-native'
 import React from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import OnBoarding from '@/components/OnBoarding'
@@ -20,6 +20,8 @@ const COMPLETED_TASKS = 8
 const Index = () => {
 
   const { isFinished } = useOnboardingPersisStore()
+
+  const {width} = Dimensions.get('window')
 
   const getGreeting = () => {
     const currentHour = new Date().getHours();
@@ -63,8 +65,8 @@ const Index = () => {
       <BlockHeader isShowSubTitle={false} mainTitle="OverView" subTitle="View All" />
 
       <View style={styles.overviewBlock}>
-        <View style={{ justifyContent: 'center', alignItems: 'center', position: 'relative', height: 200, width: 200, backgroundColor: '#2C2A4A', borderRadius: 16 }}>
-          <View style={{ width: "100%", justifyContent: 'center', alignItems: 'center', display: 'flex', height: 180 }}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', position: 'relative', aspectRatio: '1/1', width: "50%", backgroundColor: '#2C2A4A', borderRadius: 16 }}>
+          <View style={{ width: "100%", justifyContent: 'center', alignItems: 'center', display: 'flex', height: "auto" }}>
             <View style={{width: 54, height: 54 , zIndex: 2}}>
               {
                 emojiRender(COMPLETED_TASKS / TOTAL_TASKS * 100, 54)
@@ -74,8 +76,8 @@ const Index = () => {
               <Text style={{ fontSize: 18, color: '#1A182C', fontWeight: 600 }}>{COMPLETED_TASKS}/{TOTAL_TASKS}</Text>
             </View>
           </View>
-          <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: 200, height: 200 }}>
-            <CircularProgress progress={COMPLETED_TASKS / TOTAL_TASKS * 100} strokeWidth={5} size={160} />
+          <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: "100%", aspectRatio: '1/1' }}>
+            <CircularProgress progress={COMPLETED_TASKS / TOTAL_TASKS * 100} strokeWidth={5} size={ (width/2 * 0.8)} />
           </View>
         </View>
         <View></View>
