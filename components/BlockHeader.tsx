@@ -13,8 +13,15 @@ type Props = {
 const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isShowBoxCount = false, boxCount = 0 }: Props) => {
     return (
         <View style={styles.blockHeader}>
-            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 22, color: '#fff' }}>{mainTitle}</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 24, color: '#fff' }}>{mainTitle}</Text>
+                {
+                    isShowBoxCount && (
+                        <View style={{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#222239', borderRadius: 6, marginLeft: 12 }}>
+                            <Text style={{ fontSize: 18, color: '#fff' }}>{boxCount}</Text>
+                        </View>
+                    )
+                }
             </View>
             {
                 isShowSubTitle && (
@@ -35,7 +42,7 @@ const styles = StyleSheet.create({
         height: 'auto',
         display: 'flex',
         flexDirection: 'row',
-        marginBottom: 24, 
+        marginBottom: 24,
         justifyContent: 'space-between',
         alignItems: 'center',
     },

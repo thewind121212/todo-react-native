@@ -3,25 +3,19 @@ import React from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import OnBoarding from '@/components/OnBoarding'
 import { useOnboardingPersisStore } from '@/store/useOnboarding'
-import CircularProgress from '@/components/CircleProgress'
-
-// @ts-ignore
-import Cry from '@/assets/emoji/crying-svgrepo-com.svg'
-// @ts-ignore
-import Smile from '@/assets/emoji/smiling-svgrepo-com.svg'
-// @ts-ignore
-import Happy from '@/assets/emoji/happy-svgrepo-com.svg'
-// @ts-ignore
-import Love from '@/assets/emoji/in-love-svgrepo-com.svg'
+import OverviewHome from '@/components/OverviewHome'
 
 const TOTAL_TASKS = 10
 const COMPLETED_TASKS = 8
+
+
+const TOTAL_TASKS_2 = 40
+const COMPLETED_TASKS_2 = 20
 
 const Index = () => {
 
   const { isFinished } = useOnboardingPersisStore()
 
-  const {width} = Dimensions.get('window')
 
   const getGreeting = () => {
     const currentHour = new Date().getHours();
@@ -36,17 +30,6 @@ const Index = () => {
   };
 
 
-  const emojiRender = (percentComplete: number, size: number) => {
-    if (percentComplete < 25) {
-      return <Cry width={size} height={size} />
-    } else if (percentComplete < 50) {
-      return <Smile width={size} height={size} />
-    } else if (percentComplete < 75) {
-      return <Happy width={size} height={size} />
-    } else {
-      return <Love width={size} height={size} />
-    }
-  }
 
 
   return (
@@ -62,27 +45,14 @@ const Index = () => {
           <Text style={{ color: "#FF748B" }} >{getGreeting()} </Text>
           <Text style={{ fontWeight: 600 }}>LinhTran</Text></Text>
       </View>
-      <BlockHeader isShowSubTitle={false} mainTitle="OverView" subTitle="View All" />
 
-      <View style={styles.overviewBlock}>
-        <View style={{ justifyContent: 'center', alignItems: 'center', position: 'relative', aspectRatio: '1/1', width: "50%", backgroundColor: '#2C2A4A', borderRadius: 16 }}>
-          <View style={{ width: "100%", justifyContent: 'center', alignItems: 'center', display: 'flex', height: "auto" }}>
-            <View style={{width: 54, height: 54 , zIndex: 2}}>
-              {
-                emojiRender(COMPLETED_TASKS / TOTAL_TASKS * 100, 54)
-              }
-            </View>
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '20%', backgroundColor: "#fff", marginTop: -6, paddingHorizontal: 8, paddingVertical: 4, zIndex: 1 }}>
-              <Text style={{ fontSize: 18, color: '#1A182C', fontWeight: 600 }}>{COMPLETED_TASKS}/{TOTAL_TASKS}</Text>
-            </View>
-          </View>
-          <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: "100%", aspectRatio: '1/1' }}>
-            <CircularProgress progress={COMPLETED_TASKS / TOTAL_TASKS * 100} strokeWidth={5} size={ (width/2 * 0.8)} />
-          </View>
-        </View>
-        <View></View>
-        <View></View>
+      <BlockHeader isShowSubTitle={false} mainTitle="Habit Overview" subTitle="View All" isShowBoxCount={true} boxCount={TOTAL_TASKS} />
+      <OverviewHome percentComplete={(COMPLETED_TASKS/TOTAL_TASKS * 100)} />
+      <BlockHeader isShowSubTitle={false} mainTitle="Task Overview" subTitle="View All" isShowBoxCount={true} boxCount={TOTAL_TASKS} />
+      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', aspectRatio: '2/1' , flexWrap: 'wrap', gap: 12, backgroundColor: 'white', borderRadius: 16, }}>
+
       </View>
+
 
     </View>
   )
@@ -106,14 +76,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 20
   },
-  overviewBlock: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20
-  }
 })
 
 export default Index
