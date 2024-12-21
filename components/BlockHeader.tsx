@@ -3,6 +3,7 @@ import React from 'react'
 
 type Props = {
     isShowSubTitle: boolean
+    style? : any
     mainTitle: string
     subTitle: string
     isShowBoxCount?: boolean
@@ -10,11 +11,11 @@ type Props = {
     onPressHandler?: () => void
 }
 
-const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isShowBoxCount = false, boxCount = 0 }: Props) => {
+const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isShowBoxCount = false, boxCount = 0, style }: Props) => {
     return (
         <View style={styles.blockHeader}>
-            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 24, color: '#fff' }}>{mainTitle}</Text>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...style }}>
+                <Text style={{ fontSize: 26, color: '#fff' }}>{mainTitle}</Text>
                 {
                     isShowBoxCount && (
                         <View style={{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#222239', borderRadius: 6, marginLeft: 12 }}>

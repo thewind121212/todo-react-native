@@ -1,9 +1,10 @@
-import { View, Text, Modal, StyleSheet, Pressable, Dimensions } from 'react-native'
+import { View, Text, StyleSheet} from 'react-native'
 import React from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import OnBoarding from '@/components/OnBoarding'
+import OverviewHomeTask from '@/components/OverviewHomeTask'
 import { useOnboardingPersisStore } from '@/store/useOnboarding'
-import OverviewHome from '@/components/OverviewHome'
+import OverviewHomeHabit from '@/components/OverviewHomeHabit'
 
 const TOTAL_TASKS = 10
 const COMPLETED_TASKS = 8
@@ -46,17 +47,16 @@ const Index = () => {
           <Text style={{ fontWeight: 600 }}>LinhTran</Text></Text>
       </View>
 
-      <BlockHeader isShowSubTitle={false} mainTitle="Habit Overview" subTitle="View All" isShowBoxCount={true} boxCount={TOTAL_TASKS} />
-      <OverviewHome percentComplete={(COMPLETED_TASKS/TOTAL_TASKS * 100)} />
-      <BlockHeader isShowSubTitle={false} mainTitle="Task Overview" subTitle="View All" isShowBoxCount={true} boxCount={TOTAL_TASKS} />
-      <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', aspectRatio: '2/1' , flexWrap: 'wrap', gap: 12, backgroundColor: 'white', borderRadius: 16, }}>
-
-      </View>
-
+      <BlockHeader isShowSubTitle={true} mainTitle="Habit Overview" subTitle="see all" isShowBoxCount={true} boxCount={TOTAL_TASKS} />
+      <OverviewHomeHabit percentComplete={(COMPLETED_TASKS / TOTAL_TASKS * 100)} />
+      <BlockHeader isShowSubTitle={true} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={true} boxCount={8}  />
+      <OverviewHomeTask />
 
     </View>
   )
 }
+
+
 
 
 const styles = StyleSheet.create({

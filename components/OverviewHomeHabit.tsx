@@ -17,7 +17,7 @@ const TOTAL_TASKS = 10
 const COMPLETED_TASKS = 8
 
 
-const OverviewHome = ({ percentComplete }: { percentComplete: number }) => {
+const OverviewHomeHabit = ({ percentComplete }: { percentComplete: number }) => {
 
     const { width } = Dimensions.get('window')
 
@@ -35,7 +35,7 @@ const OverviewHome = ({ percentComplete }: { percentComplete: number }) => {
 
     return (
         <View style={styles.overviewBlock}>
-            <View style={{ justifyContent: 'center', alignItems: 'center', position: 'relative', aspectRatio: '1/1', width: (width * 1 / 2 - 20) - 6, backgroundColor: '#2C2A4A', borderRadius: 16 }}>
+            <View style={{ justifyContent: 'center', alignItems: 'center', position: 'relative', aspectRatio: '1/1', width: (width * 1 / 2 - 20) - 6, backgroundColor: '#222239', borderRadius: 16, maxWidth: "100%" }}>
                 <View style={{ width: "100%", justifyContent: 'center', alignItems: 'center', display: 'flex', height: "auto" }}>
                     <View style={{ width: 54, height: 54, zIndex: 2 }}>
                         {
@@ -47,17 +47,17 @@ const OverviewHome = ({ percentComplete }: { percentComplete: number }) => {
                     </View>
                 </View>
                 <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: "100%", aspectRatio: '1/1' }}>
-                    <CircularProgress progress={percentComplete} strokeWidth={5} size={(160)} />
+                    <CircularProgress progress={percentComplete} strokeWidth={7} strokeWidthFull={7} size={(160)} rotate='-90' color='#6861ED' />
 
                 </View>
             </View>
 
             <View style={{ justifyContent: 'space-between', alignItems: 'center', aspectRatio: '1/1', width: (width * 1 / 2 - 20) - 6, borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, }}>
-                <View style={ { width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#2C2A4A", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
+                <View style={ { width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#222239", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
                     <MaterialCommunityIcons name="progress-check" size={32} color="#fff" />
                     <Text style={{ color: "#fff", fontSize: 18, fontWeight: 600, marginLeft: 8 }}>{COMPLETED_TASKS} Done</Text>
                 </View>
-                <View style={ { width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#2C2A4A", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
+                <View style={ { width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#222239", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
                     <MaterialCommunityIcons name="progress-clock" size={32} color="#fff" />
                     <Text style={{ color: "#fff", fontSize: 18, fontWeight: 600, marginLeft: 8 }}>{TOTAL_TASKS - COMPLETED_TASKS} </Text>
                 </View>
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default OverviewHome
+export default OverviewHomeHabit
