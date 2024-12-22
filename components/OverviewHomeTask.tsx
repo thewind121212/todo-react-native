@@ -5,7 +5,7 @@ import CircularProgress from './CircleProgress'
 
 const OverviewHomeTask = () => {
     return (
-        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', aspectRatio: '2/1', gap: 12, backgroundColor: '#222239', borderRadius: 16, overflow: 'hidden' }}>
+        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%', aspectRatio: '2/1', gap: 12, backgroundColor: '#222239', borderRadius: 16, overflow: 'hidden', marginBottom: 20 }}>
             <View style={{ width: "50%", height: "100%", position: 'relative' }}>
                 <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: "100%", height: "100%" }}>
                     <CircularProgress progress={70} strokeWidth={12} strokeWidthFull={6} size={(160)} animationDirection="clockwise" rotate='-90' color='#3068DF' />
