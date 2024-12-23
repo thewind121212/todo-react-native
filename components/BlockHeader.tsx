@@ -15,7 +15,7 @@ const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isSh
     return (
         <View style={styles.blockHeader}>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...style }}>
-                <Text style={{ fontSize: 26, color: '#fff' }}>{mainTitle}</Text>
+                <Text style={{ fontSize: 26, color: '#fff', fontWeight: "600" }}>{mainTitle}</Text>
                 {
                     isShowBoxCount && (
                         <View style={{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#222239', borderRadius: 6, marginLeft: 12 }}>
