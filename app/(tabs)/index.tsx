@@ -6,7 +6,8 @@ import OverviewHomeTask from '@/components/OverviewHomeTask'
 import { useOnboardingPersisStore } from '@/store/useOnboarding'
 import OverviewHomeHabit from '@/components/OverviewHomeHabit'
 import HabitItem from '@/components/HabitItem'
-import CircularProgress from '@/components/CircleProgress'
+import TaskItems from '@/components/TaskItems'
+
 
 
 
@@ -20,6 +21,7 @@ const COMPLETED_TASKS_2 = 20
 const Index = () => {
   const { isFinished } = useOnboardingPersisStore()
   const [refreshing, setRefreshing] = useState(false);
+
 
 
   const onRefresh = () => {
@@ -44,7 +46,6 @@ const Index = () => {
     }
   };
 
-  const { width } = Dimensions.get('window');
 
 
 
@@ -70,9 +71,8 @@ const Index = () => {
       <OverviewHomeHabit percentComplete={(COMPLETED_TASKS / TOTAL_TASKS * 100)} />
       <BlockHeader isShowSubTitle={true} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={true} boxCount={8} />
       <OverviewHomeTask />
-      <BlockHeader isShowSubTitle={false} mainTitle="In Progress Habit" subTitle="see all" isShowBoxCount={true} boxCount={2} />
+      <BlockHeader isShowSubTitle={false} mainTitle="Your Habit" subTitle="see all" isShowBoxCount={true} boxCount={2} />
       <View style={{ flexDirection: 'column', width: '100%', height: 300, overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-
         <HabitItem cardContent="Drink water" primaryColor="#FF748B" />
         <HabitItem cardContent="Go To The Gym" primaryColor="#3068DF" />
         <HabitItem cardContent="Eat More Clean" primaryColor="#6861ED" />
@@ -80,20 +80,15 @@ const Index = () => {
         <HabitItem cardContent="Sleep Well Is Best Medicine" primaryColor="#FF748B" />
       </View>
 
-      <BlockHeader isShowSubTitle={true} mainTitle="In Progress Task" subTitle="see all" isShowBoxCount={true} boxCount={2} />
+      <BlockHeader isShowSubTitle={true} mainTitle="Main Task" subTitle="see all" isShowBoxCount={true} boxCount={2} />
 
-      <View style={{ flexDirection: 'column', width: '100%', height: 300, overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-
-        <View style={{ width: '100%', paddingVertical: 32, backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative", overflow: 'hidden' }}>
-          <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "400" }}>Learning 3D modal in cinema 4D</Text>
-          <View style={[{ position: 'absolute', right: 20 }]} >
-            <View style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <CircularProgress progress={40} strokeWidth={8} strokeWidthFull={4} size={60} rotate='-90' color='#6861ED' animationDirection='clockwise' />
-              <Text style={{ position: "absolute", color: "white", fontWeight: 600, fontSize: 14 }}>40%</Text>
-            </View>
-          </View>
-          <View style={{ width: (width - 40), height: 3, position: "absolute", left: 0, bottom: 0, borderRadius: 4, overflow: 'hidden' ,backgroundColor: "#6861ED" }}></View>
-        </View>
+      <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
+        <TaskItems mainTaskName="Doing Some Coding" overAllPercent={80} remainTimePercent={100} primaryColor='#D7BDE2' />
+        <TaskItems mainTaskName="Leet Code 150 Interview" overAllPercent={40} remainTimePercent={100} primaryColor='#FFF5BA' />
+        <TaskItems mainTaskName="UI Design Mockups" overAllPercent={75} remainTimePercent={90} primaryColor='#FFD1DC' />
+        <TaskItems mainTaskName="Database Optimization" overAllPercent={60} remainTimePercent={70} primaryColor='#B2E7E8' />
+        <TaskItems mainTaskName="Team Presentation Prep" overAllPercent={50} remainTimePercent={60} primaryColor='#D7BDE2' />
+        <TaskItems mainTaskName="API Integration" overAllPercent={30} remainTimePercent={40} primaryColor='#FFF5BA' />
       </View>
 
     </ScrollView>
