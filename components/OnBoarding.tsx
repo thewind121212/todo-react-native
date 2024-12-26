@@ -79,7 +79,6 @@ export default function OnBoarding() {
         if (isReady) {
             translateYInfo.value = withSpring(0, { damping: 100, stiffness: 100 })
             heroOpacity.value = withSpring(1, { damping: 100, stiffness: 100 })
-
         }
     }, [isReady]);
 

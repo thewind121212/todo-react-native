@@ -43,7 +43,7 @@ type Props = {
     primaryColor: string
 }
 
-const TaskItems = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColor }: Props) => {
+const MainTask = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColor }: Props) => {
 
 
     const translateX = useSharedValue<any>("-100%")
@@ -100,6 +100,6 @@ const TaskItems = ({ mainTaskName, overAllPercent, remainTimePercent, primaryCol
     )
 }
 
-export default TaskItems
+export default MainTask
 
 const styles = StyleSheet.create({})

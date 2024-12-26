@@ -7,9 +7,10 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 type Props = {
     cardContent: string,
     primaryColor: string,
+    isSmallVersion?: boolean
 }
 
-const HabitItem = ({ cardContent, primaryColor }: Props) => {
+const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false }: Props) => {
 
     const [isDone, setIsDone] = useState(false)
 
@@ -32,7 +33,7 @@ const HabitItem = ({ cardContent, primaryColor }: Props) => {
     });
 
     useEffect(() => {
-        scale.value = withTiming(isDone ? 1 : 0, {duration: 200});
+        scale.value = withTiming(isDone ? 1 : 0, { duration: 200 });
     }, [scale, isDone]);
 
 
@@ -44,10 +45,10 @@ const HabitItem = ({ cardContent, primaryColor }: Props) => {
         );
     }, [opacity]);
     return (
-        <View style={{ width: '100%', paddingVertical: 20, backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 34, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative" }}>
-            <Animated.View style={[{ width: 4, height: 38, backgroundColor: isDone? "#737379" : primaryColor, position: "absolute", left: 20, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderBottomLeftRadius: 8 }, animatedStyle]} />
-            <Text style={{ color: isDone ? "#737379" : "#FFFFFF", fontSize: 18, fontWeight: "400", textDecorationLine: isDone ? 'line-through' : "none"  }}>{cardContent}</Text>
-            <Pressable style={{ width: 24, height: 24, borderRadius: "50%", borderColor: primaryColor, borderWidth: 2.4 , opacity: !isDone ? 1 : 0 }}
+        <View style={{ width: '100%', paddingVertical: isSmallVersion ? 12 : 20, backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 34, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative" }}>
+            <Animated.View style={[{ width: 4, height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, position: "absolute", left: 20, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderBottomLeftRadius: 8 }, animatedStyle]} />
+            <Text style={{ color: isDone ? "#737379" : "#FFFFFF", fontSize: 18, fontWeight: "400", textDecorationLine: isDone ? 'line-through' : "none" }}>{cardContent}</Text>
+            <Pressable style={{ width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, borderRadius: "50%", borderColor: primaryColor, borderWidth: 2.4, opacity: !isDone ? 1 : 0 }}
                 onTouchStart={() => setIsDone(true)}
             ></Pressable>
             <Animated.View style={[{ position: 'absolute', right: 20 }, animatedStyleScale]} >
@@ -61,4 +62,4 @@ const HabitItem = ({ cardContent, primaryColor }: Props) => {
     )
 }
 
-export default HabitItem
+export default TaskItem
