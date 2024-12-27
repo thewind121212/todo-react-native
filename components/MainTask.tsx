@@ -41,9 +41,10 @@ type Props = {
     overAllPercent: number
     remainTimePercent: number
     primaryColor: string
+    isRenderProgress?: boolean
 }
 
-const MainTask = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColor }: Props) => {
+const MainTask = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColor, isRenderProgress = true }: Props) => {
 
 
     const translateX = useSharedValue<any>("-100%")
@@ -69,33 +70,37 @@ const MainTask = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColo
 
 
     return (
-        <View style={{ width: '100%', paddingVertical: 32, backgroundColor: '#222239', borderRadius: 8, borderBottomLeftRadius: 0, borderBottomRightRadius: 0, paddingRight: 20, paddingLeft: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative", overflow: 'hidden' }}>
+        <View style={{ width: '100%', paddingVertical: isRenderProgress ? 32 : 24, backgroundColor: '#222239', borderRadius: 8, borderBottomLeftRadius: 0, borderBottomRightRadius: 0, paddingRight: 20, paddingLeft: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative", overflow: 'hidden' }}>
             <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "400" }}>{mainTaskName}</Text>
-            <View style={[{ position: 'absolute', right: 20 , width: 50, height: 50}]} >
+            <View style={[{ position: 'absolute', right: 20, width: 50, height: 50 }]} >
                 <View style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <CircularProgress progress={overAllPercent} strokeWidth={6} strokeWidthFull={3} size={50} rotate='-90' color={primaryColor} animationDirection='clockwise' />
                     <Text style={{ position: "absolute", color: "white", fontWeight: 600, fontSize: 12 }}>{overAllPercent}%</Text>
                 </View>
             </View>
-            <View style={{ width: (width - 40) * (remainTimePercent / 100), height: 4, position: "absolute", left: 0, bottom: 0, borderRadius: 0, overflow: 'hidden' }}>
-                <View style={{ width: '100%', height: 4, position: "relative", overflow: 'hidden' }}>
-                    <LinearGradient
-                        colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}
-                        start={{ x: -1, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={{ width: '100%', height: 4 }}
-                    />
-                    <Animated.View style={[{ width: '100%', height: 4, position: 'absolute', top: 0, left: 0 }, translateYstyle]}>
-                        <LinearGradient
-                            colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}
-                            start={{ x: -1, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={{ width: '100%', height: 4 }}
-                        />
-                    </Animated.View>
+            {
+                isRenderProgress && (
+                    <View style={{ width: (width - 40) * (remainTimePercent / 100), height: 4, position: "absolute", left: 0, bottom: 0, borderRadius: 0, overflow: 'hidden' }}>
+                        <View style={{ width: '100%', height: 4, position: "relative", overflow: 'hidden' }}>
+                            <LinearGradient
+                                colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}
+                                start={{ x: -1, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={{ width: '100%', height: 4 }}
+                            />
+                            <Animated.View style={[{ width: '100%', height: 4, position: 'absolute', top: 0, left: 0 }, translateYstyle]}>
+                                <LinearGradient
+                                    colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}
+                                    start={{ x: -1, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={{ width: '100%', height: 4 }}
+                                />
+                            </Animated.View>
 
-                </View>
-            </View>
+                        </View>
+                    </View>
+                )
+            }
         </View>
     )
 }

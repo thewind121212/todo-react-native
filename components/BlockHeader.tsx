@@ -1,17 +1,41 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
 
 type Props = {
     isShowSubTitle: boolean
-    style? : any
+    style?: any
     mainTitle: string
     subTitle: string
     isShowBoxCount?: boolean
     boxCount?: number
     onPressHandler?: () => void
+    isShowButton?: boolean
+    buttonEvent?: () => void
 }
 
-const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isShowBoxCount = false, boxCount = 0, style }: Props) => {
+const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isShowBoxCount = false, boxCount = 0, style, isShowButton = false, buttonEvent = () => { } }: Props) => {
+
+    const shinkShareValue = useSharedValue(1)
+
+    const buttonStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ scale: shinkShareValue.value }],
+        }
+    })
+
+
+    const onPressIn = () => {
+        buttonEvent()
+        shinkShareValue.value = withSpring(0.8, { damping: 10, stiffness: 100 })
+    }
+
+    const onPressOut = () => {
+        shinkShareValue.value = withSpring(1, { damping: 10, stiffness: 100 })
+    }
+
+
     return (
         <View style={styles.blockHeader}>
             <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...style }}>
@@ -29,6 +53,19 @@ const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isSh
                     <Pressable onPress={onPressHandler ? () => onPressHandler : undefined} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Text style={{ fontSize: 18, color: "#94a3b8" }}>{subTitle}</Text>
                     </Pressable>
+                )
+            }
+
+            {
+                isShowButton && (
+                    <Animated.View style={[{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#7068FF', borderRadius: 8, marginLeft: 12 }, buttonStyle]}>
+                        <Pressable onPress={buttonEvent} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}
+                            onPressIn={onPressIn}
+                            onPressOut={onPressOut}
+                        >
+                            <FontAwesome6 name="plus" size={18} color="white" />
+                        </Pressable>
+                    </Animated.View>
                 )
             }
         </View>

@@ -71,7 +71,7 @@ const Index = () => {
       <OverviewHomeHabit percentComplete={(COMPLETED_TASKS / TOTAL_TASKS * 100)} />
       <BlockHeader isShowSubTitle={true} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={true} boxCount={8} />
       <OverviewHomeTask />
-      <BlockHeader isShowSubTitle={false} mainTitle="Your Habit" subTitle="see all" isShowBoxCount={true} boxCount={2} />
+      <BlockHeader isShowSubTitle={false} mainTitle="Recent Habit" subTitle="see all" isShowBoxCount={true} boxCount={2} />
       <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
         <TaskItem cardContent="Drink water" primaryColor="#FF748B" />
         <TaskItem cardContent="Go To The Gym" primaryColor="#3068DF" />
@@ -80,7 +80,7 @@ const Index = () => {
         <TaskItem cardContent="Sleep Well Is Best Medicine" primaryColor="#FF748B" />
       </View>
 
-      <BlockHeader isShowSubTitle={true} mainTitle="Main Task" subTitle="see all" isShowBoxCount={true} boxCount={12} />
+      <BlockHeader isShowSubTitle={true} mainTitle="Recent Task" subTitle="see all" isShowBoxCount={true} boxCount={12} />
 
       <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
         <MainTask mainTaskName="Doing Some Coding" overAllPercent={80} remainTimePercent={100} primaryColor='#D7BDE2' />

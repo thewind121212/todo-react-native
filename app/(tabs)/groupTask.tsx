@@ -1,15 +1,21 @@
 
-import { View, Text, Modal, StyleSheet, RefreshControl, ScrollView } from 'react-native'
+import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable } from 'react-native'
+import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
-import TaskItem from '@/components/TaskItem'
-import MainTask from '@/components/MainTask'
+import AddButton from '@/components/AddButton';
+import MainTask from '@/components/MainTask';
 
 
 
-const GroupTask = () => {
+const AllTasks = () => {
 
   const [refreshing, setRefreshing] = useState(false);
+  const [query, setQuery] = useState<string>('');
+
+
+  const { width, height } = Dimensions.get('window');
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -20,130 +26,62 @@ const GroupTask = () => {
     }, 2000); // 2 seconds delay
   };
 
+
+  const handleSearch = () => {
+    console.log('searching for:', height);
+  }
+
   return (
 
     <View style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto" }}>
+
+      <View style={{ width: 64, height: 64, position: "fixed", top: height - (64 + 200), right: -(width / 2 - (50)), zIndex: 5, borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <AddButton />
+      </View>
 
       <ScrollView style={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} />
-        <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <TaskItem cardContent="Drink water" primaryColor="#FF748B" />
-          <TaskItem cardContent="Go To The Gym" primaryColor="#3068DF" />
-          <TaskItem cardContent="Eat More Clean" primaryColor="#6861ED" />
-          <TaskItem cardContent="Doing Some Coding" primaryColor="#FF748B" />
-          <TaskItem cardContent="Sleep Well Is Best Medicine" primaryColor="#FF748B" />
+
+
+        <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative" }}>
+          <TextInput
+            style={styles.input}
+            placeholder="Search"
+            value={query}
+            onChangeText={setQuery}
+            placeholderTextColor={'#4D4C71'}
+            onSubmitEditing={handleSearch}
+          />
+          <View style={{ width: 64, height: 64, position: "absolute", left: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Ionicons name="search" size={32} color="white" />
+          </View>
+          <Pressable style={{ width: 64, height: 64, position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}
+            onPressIn={() => setQuery('')}
+          >
+            {
+              query.length > 0 &&
+              <FontAwesome6 name="xmark" size={24} color="white" />
+            }
+          </Pressable>
         </View>
 
-        <BlockHeader isShowSubTitle={false} mainTitle="All Task" subTitle="see all" isShowBoxCount={true} boxCount={10} />
-        <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            {/* // Group 1: Reading */}
-            <MainTask mainTaskName="Reading Activities" overAllPercent={70} remainTimePercent={90} primaryColor="#FF9A6B" />
-            {/* // Group 1: Reading */}
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#FF9A6B", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF9A6B", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF9A6B", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Read a Book" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Pick a New Book to Read" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Set a Reading Goal" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Highlight Key Points in the Book" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Discuss the Book with a Friend" primaryColor="#FF9A6B" isSmallVersion={true} />
-              </View>
-            </View>
 
-          </View>
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} />
 
-
-
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            {/* // Group 2: Meditation */}
-            <MainTask mainTaskName="Meditation Practice" overAllPercent={80} remainTimePercent={85} primaryColor="#4CAF50" />
-            {/* // Group 2: Meditation */}
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#4CAF50", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#4CAF50", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#4CAF50", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Practice Meditation" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Set a Timer for Meditation" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Find a Quiet Space to Meditate" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Follow a Guided Meditation Video" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Reflect on Your Meditation Session" primaryColor="#4CAF50" isSmallVersion={true} />
-              </View>
-            </View>
-
-          </View>
-
-
-
-
-
-
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            <MainTask mainTaskName="Walking for Wellness" overAllPercent={60} remainTimePercent={75} primaryColor="#FFCC33" />
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#FFCC33", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FFCC33", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FFCC33", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Take a Walk Outside" primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Plan a Walking Route" primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Take a Photo of Something " primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Track Steps Using a Fitness App" primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Walk in a New Neighborhood" primaryColor="#FFCC33" isSmallVersion={true} />
-              </View>
-            </View>
-          </View>
-
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-
-            <MainTask mainTaskName="Skill Development" overAllPercent={90} remainTimePercent={95} primaryColor="#8E44AD" />
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#8E44AD", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#8E44AD", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#8E44AD", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Learn a New Skill" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Watch a Tutorial on the Skill" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Practice the Skill for 15 Minutes" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Set a Progress Goal for the Skill" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Share What You Learned Online" primaryColor="#8E44AD" isSmallVersion={true} />
-              </View>
-            </View>
-
-          </View>
-
-
-
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            <MainTask mainTaskName="Healthy Eating Goals" overAllPercent={65} remainTimePercent={80} primaryColor="#FF5722" />
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#FF5722", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF5722", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF5722", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Prepare Healthy Meals" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Plan a Weekly Meal Schedule" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Buy Fresh Ingredients" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Try a New Healthy Recipe" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Pack a Healthy Lunch" primaryColor="#FF5722" isSmallVersion={true} />
-              </View>
-            </View>
-
-          </View>
-
+        <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
+          <MainTask mainTaskName="Learning" overAllPercent={60} remainTimePercent={80} primaryColor='#FF9A6B' isRenderProgress={false} />
+          <MainTask mainTaskName="Body" overAllPercent={50} remainTimePercent={70} primaryColor='#4CAF50' isRenderProgress={false} />
+          <MainTask mainTaskName="Music" overAllPercent={85} remainTimePercent={95} primaryColor='#FFCC33' isRenderProgress={false} />
+          <MainTask mainTaskName="Coding" overAllPercent={40} remainTimePercent={65} primaryColor='#8E44AD' isRenderProgress={false} />
         </View>
+
+
+        {/* <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} /> */}
+
+
 
       </ScrollView>
 
@@ -158,8 +96,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // backgroundColor: '#1A182C',
+    width: "100%",
     padding: 20,
+    marginTop: -64,
+  },
+  input: {
+    height: "100%",
+    paddingHorizontal: 64,
+    marginBottom: 10,
+    borderRadius: 12,
+    color: '#4D4C71',
+    fontSize: 20,
   },
 })
 
-export default GroupTask
+export default AllTasks
