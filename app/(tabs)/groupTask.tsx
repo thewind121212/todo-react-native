@@ -1,11 +1,11 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable } from 'react-native'
+import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import AddButton from '@/components/AddButton';
-import MainTask from '@/components/MainTask';
+import GroupCard from '@/components/GroupCard';
 
 
 
@@ -72,20 +72,28 @@ const AllTasks = () => {
         <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} />
 
         <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <MainTask mainTaskName="Learning" overAllPercent={60} remainTimePercent={80} primaryColor='#FF9A6B' isRenderProgress={false} />
-          <MainTask mainTaskName="Body" overAllPercent={50} remainTimePercent={70} primaryColor='#4CAF50' isRenderProgress={false} />
-          <MainTask mainTaskName="Music" overAllPercent={85} remainTimePercent={95} primaryColor='#FFCC33' isRenderProgress={false} />
-          <MainTask mainTaskName="Coding" overAllPercent={40} remainTimePercent={65} primaryColor='#8E44AD' isRenderProgress={false} />
+          <GroupCard mainTaskName="Personal Development" color="#FF748B" />
+          <GroupCard mainTaskName="Health & Fitness" color="#4CAF50" />
+          <GroupCard mainTaskName="Home Management" color="#FFA500" />
+          <GroupCard mainTaskName="Work Projects" color="#1E90FF" />
+          <GroupCard mainTaskName="Education & Learning" color="#6A5ACD" />
+          <GroupCard mainTaskName="Financial Planning" color="#FFD700" />
+        </View>
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} />
+        <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
+          <GroupCard mainTaskName="Reading Activities" color="#FF9A6B" isHabit={false} />
+          <GroupCard mainTaskName="Meditation Practice" color="#4CAF50" isHabit={false} />
+          <GroupCard mainTaskName="Walking for Wellness" color="#FFCC33" isHabit={false} />
+          <GroupCard mainTaskName="Skill Development" color="#8E44AD" isHabit={false} />
+          <GroupCard mainTaskName="Healthy Eating Goals" color="#FF5722" isHabit={false} />
+
         </View>
 
 
-        {/* <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} /> */}
 
+      </ScrollView >
 
-
-      </ScrollView>
-
-    </View>
+    </View >
   )
 
 
@@ -108,6 +116,9 @@ const styles = StyleSheet.create({
     color: '#4D4C71',
     fontSize: 20,
   },
+
+
+
 })
 
 export default AllTasks
