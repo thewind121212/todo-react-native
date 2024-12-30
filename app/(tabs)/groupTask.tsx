@@ -1,6 +1,7 @@
 
 import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { SheetManager } from 'react-native-actions-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
@@ -29,6 +30,8 @@ const AllTasks = () => {
 
   const handleSearch = () => {
     console.log('searching for:', height);
+    SheetManager.show('example-sheet');
+
   }
 
   return (

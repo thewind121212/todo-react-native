@@ -16,7 +16,7 @@ const GroupCard = ({ mainTaskName, color, isHabit = true }: Props) => {
             <View style={{ display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
                 {
                     isHabit ? (
-                        <MaterialIcons name="star" size={24} color="white" />
+                        <MaterialIcons name="autorenew" size={24} color="white" />
                     ) : (
                         <FontAwesome5 name="tasks" size={24} color="white" />
                     )
