@@ -5,7 +5,6 @@ import { SheetManager } from 'react-native-actions-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
-import AddButton from '@/components/AddButton';
 import GroupCard from '@/components/GroupCard';
 
 
@@ -30,18 +29,11 @@ const AllTasks = () => {
 
   const handleSearch = () => {
     console.log('searching for:', height);
-    SheetManager.show('example-sheet');
-
   }
 
   return (
 
     <View style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto" }}>
-
-      <View style={{ width: 64, height: 64, position: "fixed", top: height - (64 + 200), right: -(width / 2 - (50)), zIndex: 5, borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <AddButton />
-      </View>
-
       <ScrollView style={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -72,7 +64,9 @@ const AllTasks = () => {
         </View>
 
 
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} />
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true}
+       buttonEvent={() => SheetManager.show('create-main-task')} 
+        />
 
         <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
           <GroupCard mainTaskName="Personal Development" color="#FF748B" />
@@ -82,6 +76,8 @@ const AllTasks = () => {
           <GroupCard mainTaskName="Education & Learning" color="#6A5ACD" />
           <GroupCard mainTaskName="Financial Planning" color="#FFD700" />
         </View>
+
+        <View style={{marginTop: 40}}></View>
         <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} />
         <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
           <GroupCard mainTaskName="Reading Activities" color="#FF9A6B" isHabit={false} />
@@ -109,7 +105,6 @@ const styles = StyleSheet.create({
     // backgroundColor: '#1A182C',
     width: "100%",
     padding: 20,
-    marginTop: -64,
   },
   input: {
     height: "100%",
