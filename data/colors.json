@@ -1,0 +1,62 @@
+{
+    "INIT_COLOR_PICKER": [
+        "#FF748B",
+        "#D0FC60",
+        "#7068FF",
+        "#6EDDED",
+        "#535AFF",
+        "#FCC760"
+    ],
+    "BRAND_COLOR_SETS": {
+        "Macaron Colors": [
+            "#FF8986",
+            "#FFC0AF",
+            "#FFDCA3",
+            "#BBDFCF",
+            "#2DC8D4",
+            "#5BACF9",
+            "#C69CF0",
+            "#FF6EAD"
+        ],
+        "Morandi Colors": [
+            "#E1715C",
+            "#FFC67E",
+            "#DCDE55",
+            "#9ECAB8",
+            "#5DCCD5",
+            "#7DAAE3",
+            "#B293CB",
+            "#D3779D"
+        ],
+        "Rococo": [
+            "#CA6F6E",
+            "#EB8200",
+            "#E7CD6E",
+            "#67A891",
+            "#191919",
+            "#2C84B9",
+            "#818BB3",
+            "#D6868F"
+        ],
+        "Classic Colors": [
+            "#FE5A61",
+            "#FEAC2D",
+            "#FFD74C",
+            "#DBE333",
+            "#00D4A5",
+            "#00A8F5",
+            "#DE5EFF",
+            "#FF66A6"
+        ],
+        "Memphis": [
+            "#FF0001",
+            "#FF7352",
+            "#FFD234",
+            "#00DFB0",
+            "#00BDC7",
+            "#945CFF",
+            "#DA84FF",
+            "#FF56C6"
+        ]
+    }
+}
