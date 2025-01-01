@@ -8,6 +8,12 @@ import OverviewHomeHabit from '@/components/OverviewHomeHabit'
 import TaskItem from '@/components/TaskItem'
 import MainTask from '@/components/MainTask'
 import OnBoarding from '@/components/OnBoarding'
+import * as SQLite from "expo-sqlite";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+
+
+
+
 
 
 
@@ -21,6 +27,10 @@ const COMPLETED_TASKS_2 = 20
 
 const Index = () => {
   const { isFinished } = useOnboardingPersisStore()
+  // DEBUGER
+  const db = SQLite.openDatabaseSync("todo.db");
+  useDrizzleStudio(db);
+  // DEBUGER
 
 
   const [refreshing, setRefreshing] = useState(false);

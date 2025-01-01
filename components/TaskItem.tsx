@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Dimensions, Pressable } from 'react-native'
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from "react-native-reanimated";
+import { View, Text, Pressable } from 'react-native'
+import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 

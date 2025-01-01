@@ -43,7 +43,7 @@ const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isSh
                 {
                     isShowBoxCount && (
                         <View style={{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#222239', borderRadius: 6, marginLeft: 12 }}>
-                            <Text style={{ fontSize: 18, color: '#fff' }}>{boxCount}</Text>
+                            {boxCount !== 0 && <Text style={{ fontSize: 18, color: '#fff' }}>{boxCount}</Text>}
                         </View>
                     )
                 }

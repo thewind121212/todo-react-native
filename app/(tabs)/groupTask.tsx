@@ -1,11 +1,15 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
+import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, FlatList } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSQLiteContext } from 'expo-sqlite';
 import { SheetManager } from 'react-native-actions-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import GroupCard from '@/components/GroupCard';
+import { MainTaskType } from '@/types/appTypes';
+import { Skeleton } from 'moti/skeleton'
+
 
 
 
@@ -13,6 +17,16 @@ const AllTasks = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState<string>('');
+  const [allTasks, setAllTasks] = useState<{
+    habit: MainTaskType[],
+    task: MainTaskType[]
+  }>({
+    habit: [],
+    task: []
+  });
+
+  const db = useSQLiteContext();
+
 
 
   const { width, height } = Dimensions.get('window');
@@ -30,6 +44,33 @@ const AllTasks = () => {
   const handleSearch = () => {
     console.log('searching for:', height);
   }
+
+
+  useEffect(() => {
+
+
+    //simulate sleep
+
+    const sleep = (ms: number) => {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function getAllMainTask() {
+      await sleep(3000);
+      const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
+      if (result) {
+        const habit = result.filter((item) => item.type === 'habit');
+        const task = result.filter((item) => item.type === 'task');
+        setAllTasks({
+          habit,
+          task
+        })
+      }
+    }
+
+    getAllMainTask()
+
+  }, [])
 
   return (
 
@@ -61,33 +102,63 @@ const AllTasks = () => {
               <FontAwesome6 name="xmark" size={24} color="white" />
             }
           </Pressable>
+
+
         </View>
 
 
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true}
-       buttonEvent={() => SheetManager.show('create-main-task')} 
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.habit.length} isShowButton={true}
+          buttonEvent={() => SheetManager.show('create-main-task')}
         />
 
-        <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <GroupCard mainTaskName="Personal Development" color="#FF748B" />
-          <GroupCard mainTaskName="Health & Fitness" color="#4CAF50" />
-          <GroupCard mainTaskName="Home Management" color="#FFA500" />
-          <GroupCard mainTaskName="Work Projects" color="#1E90FF" />
-          <GroupCard mainTaskName="Education & Learning" color="#6A5ACD" />
-          <GroupCard mainTaskName="Financial Planning" color="#FFD700" />
+
+        <View
+          style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
+        >
+          {
+            allTasks.habit.length > 0 && allTasks.habit.map((mainTaskItem) => {
+              return (
+                <GroupCard key={mainTaskItem.id} mainTaskName={mainTaskItem.title} color={mainTaskItem.color} />
+              )
+            })
+          }
+
+          {
+            allTasks.habit.length === 0 && (
+              <>
+                {[...Array(5).keys()].map((_, index) => (
+                  <Skeleton key={index + "groupTaskSkeletonHabit"} colorMode={'dark'} width={'100%'} height={64} colors={["#222239", "#2c2c49"]} />
+                ))}
+              </>
+            )
+          }
         </View>
 
-        <View style={{marginTop: 40}}></View>
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={4} isShowButton={true} />
-        <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <GroupCard mainTaskName="Reading Activities" color="#FF9A6B" isHabit={false} />
-          <GroupCard mainTaskName="Meditation Practice" color="#4CAF50" isHabit={false} />
-          <GroupCard mainTaskName="Walking for Wellness" color="#FFCC33" isHabit={false} />
-          <GroupCard mainTaskName="Skill Development" color="#8E44AD" isHabit={false} />
-          <GroupCard mainTaskName="Healthy Eating Goals" color="#FF5722" isHabit={false} />
+
+        <View style={{ marginTop: 40 }}></View>
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.task.length} isShowButton={true} />
+        <View
+          style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
+        >
+          {
+            allTasks.task.length > 0 && allTasks.task.map((mainTaskItem) => {
+              return (
+                <GroupCard key={mainTaskItem.id} mainTaskName={mainTaskItem.title} color={mainTaskItem.color} isHabit={false} />
+              )
+            })
+          }
+
+          {
+            allTasks.habit.length === 0 && (
+              <>
+                {[...Array(5).keys()].map((_, index) => (
+                  <Skeleton key={index + "groupTaskSkeletonTasks"} colorMode={'dark'} width={'100%'} height={64} colors={["#222239", "#2c2c49"]} />
+                ))}
+              </>
+            )
+          }
 
         </View>
-
 
 
       </ScrollView >
