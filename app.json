@@ -10,14 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.to-do-app-fix"
+      "bundleIdentifier": "com.anonymous.to-do-app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.todoappfix"
+      "package": "com.anonymous.todoapp"
     },
     "web": {
       "bundler": "metro",
