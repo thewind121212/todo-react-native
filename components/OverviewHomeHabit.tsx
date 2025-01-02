@@ -11,7 +11,6 @@ import Smile from '@/assets/emoji/smiling-svgrepo-com.svg'
 import Happy from '@/assets/emoji/happy-svgrepo-com.svg'
 // @ts-ignore
 import Love from '@/assets/emoji/in-love-svgrepo-com.svg'
-import { FlipInEasyX } from 'react-native-reanimated';
 
 
 

@@ -1,4 +1,4 @@
-package com.anonymous.todoapp
+package com.anonymous.todoappfix
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
