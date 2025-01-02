@@ -14,13 +14,15 @@ const GroupCard = ({ mainTaskName, color, isHabit = true }: Props) => {
     return (
         <View style={styles.mainGroupTaskCard}>
             <View style={{ display: "flex", flexDirection: "row", gap: 8, alignItems: "center" }}>
-                {
-                    isHabit ? (
-                        <MaterialIcons name="autorenew" size={24} color="white" />
-                    ) : (
-                        <FontAwesome5 name="tasks" size={24} color="white" />
-                    )
-                }
+                <View style={{ width: 24, height: 24 }}>
+                    {
+                        isHabit ? (
+                            <MaterialIcons name="autorenew" size={24} color="white" />
+                        ) : (
+                            <FontAwesome5 name="tasks" size={24} color="white" />
+                        )
+                    }
+                </View>
                 <Text style={{ color: "#FFFFFF", fontSize: 18, fontWeight: "400" }}>{mainTaskName}</Text>
             </View>
             <View style={{ width: 30, height: 30, backgroundColor: color, borderRadius: 61, display: "flex", justifyContent: "center", alignContent: "center" }}>

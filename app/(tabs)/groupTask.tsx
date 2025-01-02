@@ -9,6 +9,7 @@ import BlockHeader from '@/components/BlockHeader'
 import GroupCard from '@/components/GroupCard';
 import { MainTaskType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton'
+import { isLoading } from 'expo-font';
 
 
 
@@ -20,7 +21,9 @@ const AllTasks = () => {
   const [allTasks, setAllTasks] = useState<{
     habit: MainTaskType[],
     task: MainTaskType[]
+    isLoading: boolean
   }>({
+    isLoading: true,
     habit: [],
     task: []
   });
@@ -56,17 +59,23 @@ const AllTasks = () => {
     }
 
     async function getAllMainTask() {
-      await sleep(3000);
+
+      await sleep(1500);
+
       const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
       if (result) {
         const habit = result.filter((item) => item.type === 'habit');
         const task = result.filter((item) => item.type === 'task');
         setAllTasks({
+          ...allTasks,
           habit,
-          task
+          task,
+          isLoading: false
         })
       }
     }
+
+
 
     getAllMainTask()
 
@@ -124,10 +133,10 @@ const AllTasks = () => {
           }
 
           {
-            allTasks.habit.length === 0 && (
+            allTasks.isLoading && (
               <>
                 {[...Array(5).keys()].map((_, index) => (
-                  <Skeleton key={index + "groupTaskSkeletonHabit"} colorMode={'dark'} width={'100%'} height={64} colors={["#222239", "#2c2c49"]} />
+                  <Skeleton key={index + "groupTaskSkeletonHabit"} colorMode={'dark'} width={'100%'} height={52} colors={["#222239", "#2c2c49"]} />
                 ))}
               </>
             )
@@ -149,10 +158,10 @@ const AllTasks = () => {
           }
 
           {
-            allTasks.habit.length === 0 && (
+            allTasks.isLoading && (
               <>
                 {[...Array(5).keys()].map((_, index) => (
-                  <Skeleton key={index + "groupTaskSkeletonTasks"} colorMode={'dark'} width={'100%'} height={64} colors={["#222239", "#2c2c49"]} />
+                  <Skeleton key={index + "groupTaskSkeletonTasks"} colorMode={'dark'} width={'100%'} height={52} colors={["#222239", "#2c2c49"]} />
                 ))}
               </>
             )

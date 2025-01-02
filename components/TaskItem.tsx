@@ -2,28 +2,33 @@ import { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native'
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useSQLiteContext } from 'expo-sqlite';
 
 
 type Props = {
     cardContent: string,
+    taskItemId: number,
     primaryColor: string,
+    isDoneProps?: boolean,
     isSmallVersion?: boolean
+    isUseSetDoneLocal?: boolean
+    setDoneOutFunc?: (id: number) => void
 }
 
-const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false }: Props) => {
+const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { } }: Props) => {
 
     const [isDone, setIsDone] = useState(false)
 
+
     const scale = useSharedValue(0);
+    const db = useSQLiteContext();
+
 
     const animatedStyleScale = useAnimatedStyle(() => {
         return {
             transform: [{ scale: scale.value }],
         };
     });
-
-
-
 
     const opacity = useSharedValue(1);
     const animatedStyle = useAnimatedStyle(() => {
@@ -33,9 +38,24 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false }: Props) 
     });
 
     useEffect(() => {
-        scale.value = withTiming(isDone ? 1 : 0, { duration: 200 });
-    }, [scale, isDone]);
+        setIsDone(isDoneProps)
+    }, [scale, isDoneProps]);
 
+    useEffect(() => {
+        scale.value = withTiming(isDone ? 1 : 0, { duration: 200 });
+    }, [isDone])
+
+
+
+    const handlerCheckTask = async () => {
+        await db.execAsync(`UPDATE tasks SET completed = ${isDone ? 0 : 1} WHERE id = ${taskItemId}`)
+        if (isUseSetDoneLocal) {
+            setIsDone(!isDone)
+        }
+        else {
+            setDoneOutFunc(taskItemId)
+        }
+    }
 
     useEffect(() => {
         opacity.value = withRepeat(
@@ -50,11 +70,11 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false }: Props) 
             <Text style={{ color: isDone ? "#737379" : "#FFFFFF", fontSize: 18, fontWeight: "400", textDecorationLine: isDone ? 'line-through' : "none", maxWidth: "80%" }}>{cardContent}</Text>
             <View style={{ width: 28, height: 28, aspectRatio: "1/1", display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <Pressable style={{ width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, borderRadius: "50%", borderColor: primaryColor, borderWidth: 2.4, opacity: !isDone ? 1 : 0 }}
-                    onTouchStart={() => setIsDone(true)}
+                    onTouchStart={handlerCheckTask}
                 ></Pressable>
                 <Animated.View style={[{ position: 'absolute' }, animatedStyleScale]} >
                     <Pressable
-                        onPress={() => setIsDone(false)}
+                        onPress={handlerCheckTask}
                     >
                         <FontAwesome name="check-circle" size={28} color="#737379" />
                     </Pressable>

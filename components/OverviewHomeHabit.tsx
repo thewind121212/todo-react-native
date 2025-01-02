@@ -13,13 +13,13 @@ import Happy from '@/assets/emoji/happy-svgrepo-com.svg'
 import Love from '@/assets/emoji/in-love-svgrepo-com.svg'
 import { FlipInEasyX } from 'react-native-reanimated';
 
-const TOTAL_TASKS = 10
-const COMPLETED_TASKS = 8
 
 
-const OverviewHomeHabit = ({ percentComplete }: { percentComplete: number }) => {
+const OverviewHomeHabit = ({ doneTask, allTasks }: { doneTask: number, allTasks: number }) => {
 
     const { width } = Dimensions.get('window')
+
+    const percentComplete = allTasks === 0 ? 0 : Math.round((doneTask / allTasks) * 100)
 
     const emojiRender = (percentComplete: number, size: number) => {
         if (percentComplete < 25) {
@@ -43,7 +43,7 @@ const OverviewHomeHabit = ({ percentComplete }: { percentComplete: number }) => 
                         }
                     </View>
                     <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '20%', backgroundColor: "#fff", marginTop: -6, paddingHorizontal: 8, paddingVertical: 4, zIndex: 1 }}>
-                        <Text style={{ fontSize: 18, color: '#1A182C', fontWeight: 600 }}>{COMPLETED_TASKS}/{TOTAL_TASKS}</Text>
+                        <Text style={{ fontSize: 18, color: '#1A182C', fontWeight: 600 }}>{doneTask}/{allTasks}</Text>
                     </View>
                 </View>
                 <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: "100%", aspectRatio: '1/1' }}>
@@ -53,13 +53,13 @@ const OverviewHomeHabit = ({ percentComplete }: { percentComplete: number }) => 
             </View>
 
             <View style={{ justifyContent: 'space-between', alignItems: 'center', aspectRatio: '1/1', width: (width * 1 / 2 - 20) - 6, borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, }}>
-                <View style={ { width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#222239", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
+                <View style={{ width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#222239", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
                     <MaterialCommunityIcons name="progress-check" size={32} color="#fff" />
-                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: 600, marginLeft: 8 }}>{COMPLETED_TASKS} Done</Text>
+                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: 600, marginLeft: 8 }}>{doneTask} Done</Text>
                 </View>
-                <View style={ { width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#222239", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
+                <View style={{ width: "100%", height: ((width * 1 / 2 - 20) - 6) / 2 - 6, backgroundColor: "#222239", borderRadius: 16, display: 'flex', justifyContent: "flex-start", flexDirection: 'row', alignItems: "center", paddingLeft: 16 }} >
                     <MaterialCommunityIcons name="progress-clock" size={32} color="#fff" />
-                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: 600, marginLeft: 8 }}>{TOTAL_TASKS - COMPLETED_TASKS} </Text>
+                    <Text style={{ color: "#fff", fontSize: 18, fontWeight: 600, marginLeft: 8 }}>{allTasks - doneTask} </Text>
                 </View>
             </View>
         </View>

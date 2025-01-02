@@ -1,6 +1,8 @@
 import { Tabs } from 'expo-router';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Octicons from '@expo/vector-icons/Octicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 
 export default function TabLayout() {
@@ -19,6 +21,7 @@ export default function TabLayout() {
                     borderTopColor: 'transparent',
                     display: 'flex',
                     borderTopWidth: 0,
+                    paddingTop: 10,
                 },
                 headerShown: true,
                 headerRight: () => {
@@ -41,9 +44,19 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="allHabit"
+                options={{
+                    headerTitle: 'Habits',
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ color, focused }) => (
+                        <MaterialIcons name="task-alt" size={24} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
                 name="allTasks"
                 options={{
-                    headerTitle: 'All Tasks',
+                    headerTitle: 'Tasks',
                     tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
                         <Octicons name="checklist" size={24} color={color} />
@@ -56,7 +69,7 @@ export default function TabLayout() {
                     headerTitle: 'Group Tasks',
                     tabBarShowLabel: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <Octicons name="tasklist" size={24} color={color} />
+                        <MaterialCommunityIcons name="inbox-full" size={24} color={color} />
                     ),
                 }}
             />

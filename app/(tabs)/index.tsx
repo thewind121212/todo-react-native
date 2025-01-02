@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions, Modal } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
+
 
 import OverviewHomeTask from '@/components/OverviewHomeTask'
 import { useOnboardingPersisStore } from '@/store/useOnboarding'
@@ -10,6 +11,8 @@ import MainTask from '@/components/MainTask'
 import OnBoarding from '@/components/OnBoarding'
 import * as SQLite from "expo-sqlite";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import { TaskItemNotHabitType, TaskItemQueryType } from '@/types/appTypes'
+import { Skeleton } from 'moti/skeleton'
 
 
 
@@ -31,6 +34,16 @@ const Index = () => {
   const db = SQLite.openDatabaseSync("todo.db");
   useDrizzleStudio(db);
   // DEBUGER
+
+  const [allTasks, setAllTasks] = useState<{
+    habit: TaskItemQueryType[]
+    tasks: TaskItemNotHabitType[]
+    loading: boolean
+  }>({
+    habit: [],
+    tasks: [],
+    loading: true
+  })
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -57,6 +70,78 @@ const Index = () => {
   };
 
 
+  useEffect(() => {
+
+    const sleep = (ms: number) => {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function getAllMainTask() {
+      const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
+      FROM tasks t
+      JOIN main_tasks mt ON t.main_task_id = mt.id
+`);
+
+      if (result) {
+        const habit: TaskItemQueryType[] = []
+        const tasksNotHabit: TaskItemNotHabitType[] = []
+
+
+        result.map((item) => {
+          if (item.main_task_type === 'habit') {
+            habit.push(item)
+          }
+          else {
+            const indexOfTask = tasksNotHabit.findIndex((task) => task.id === item.main_task_id.toString())
+            if (indexOfTask === -1) {
+              tasksNotHabit.push({
+                id: item.main_task_id.toString(),
+                primary_color: item.primary_color,
+                title: item.main_task_title,
+                dueDate: item.dueDate,
+                createDate: item.createDate,
+                data: [item]
+              })
+            } else {
+              tasksNotHabit[indexOfTask].data.push(item)
+            }
+          }
+        })
+
+        setAllTasks({
+          ...allTasks,
+          habit: habit,
+          tasks: tasksNotHabit,
+          loading: false
+        })
+      }
+    }
+
+    getAllMainTask()
+
+  }, [])
+
+
+  const completedHabit = useMemo(() => {
+
+    return allTasks.habit.filter((item) => item.completed === 1).length
+
+  }, [allTasks.habit])
+
+
+  const habitByPriority = useMemo(() => {
+
+    const habitFilter: TaskItemQueryType[] = []
+    allTasks.habit.map((item) => {
+      if ((item.priority === 2 || item.priority === 1) && item.completed === 0 && habitFilter.length < 5) {
+        habitFilter.push(item)
+      }
+    })
+    return habitFilter
+
+  }, [allTasks.habit])
+
+
 
 
   return (
@@ -77,17 +162,33 @@ const Index = () => {
           <Text style={{ fontWeight: 600 }}>LinhTran</Text></Text>
       </View>
 
-      <BlockHeader isShowSubTitle={true} mainTitle="Habit Overview" subTitle="see all" isShowBoxCount={true} boxCount={TOTAL_TASKS} />
-      <OverviewHomeHabit percentComplete={(COMPLETED_TASKS / TOTAL_TASKS * 100)} />
-      <BlockHeader isShowSubTitle={true} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={true} boxCount={8} />
+      <BlockHeader isShowSubTitle={false} mainTitle="Habit Overview" subTitle="see all" isShowBoxCount={false} boxCount={TOTAL_TASKS} />
+      <OverviewHomeHabit doneTask={completedHabit} allTasks={allTasks.habit.length} />
+      <BlockHeader isShowSubTitle={false} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={false} boxCount={1} />
       <OverviewHomeTask />
-      <BlockHeader isShowSubTitle={false} mainTitle="Recent Habit" subTitle="see all" isShowBoxCount={true} boxCount={2} />
+      <BlockHeader isShowSubTitle={true} mainTitle="Recent Habit" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.habit.length} />
       <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-        <TaskItem cardContent="Drink water" primaryColor="#FF748B" />
-        <TaskItem cardContent="Go To The Gym" primaryColor="#3068DF" />
-        <TaskItem cardContent="Eat More Clean" primaryColor="#6861ED" />
-        <TaskItem cardContent="Doing Some Coding" primaryColor="#FF748B" />
-        <TaskItem cardContent="Sleep Well Is Best Medicine" primaryColor="#FF748B" />
+        {
+          habitByPriority.length > 0 && !allTasks.loading && habitByPriority.map((item) =>
+            <TaskItem key={item.id} cardContent={item.title} primaryColor={item.primary_color} taskItemId={item.id} isUseSetDoneLocal={true} isDoneProps={item.completed === 1 ? true : false} />
+          )
+        }
+        {
+          (habitByPriority.length === 0 || allTasks.loading) && (
+            <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
+              <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
+            </View>
+          )
+        }
+        {
+          allTasks.loading && (
+            <>
+              {[...Array(10).keys()].map((_, index) => (
+                <Skeleton key={index + "groupTaskSkeletonHabit"} colorMode={'dark'} width={'100%'} height={52} colors={["#222239", "#2c2c49"]} />
+              ))}
+            </>
+          )
+        }
       </View>
 
       <BlockHeader isShowSubTitle={true} mainTitle="Recent Task" subTitle="see all" isShowBoxCount={true} boxCount={12} />

@@ -1,207 +1,188 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable } from 'react-native'
+import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
-import TaskItem from '@/components/TaskItem'
-import MainTask from '@/components/MainTask'
 import AddButton from '@/components/AddButton';
+import { useSQLiteContext } from 'expo-sqlite';
+import { TaskItemNotHabitType, TaskItemQueryType } from '@/types/appTypes';
+import TaskTree, { TaskTreePlaceHolder } from '@/components/TaskTree';
+import { MotiView } from 'moti';
+
+const Spacer = ({ height = 16 }) => <MotiView style={{ height }} />
+
+const AllTask = () => {
+
+    const [refreshing, setRefreshing] = useState(false);
+    const [allTasks, setAllTasks] = useState<{
+        tasks: TaskItemNotHabitType[]
+        loading: boolean
+    }>({
+        tasks: [],
+        loading: true
+    })
+    const [query, setQuery] = useState<string>('');
+    const db = useSQLiteContext();
+
+    const { width, height } = Dimensions.get('window');
+
+    const onRefresh = () => {
+        setRefreshing(true);
+
+        // Simulate a network request or data refresh
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 2000); // 2 seconds delay
+    };
 
 
 
-const GroupTask = () => {
+    useEffect(() => {
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [query, setQuery] = useState<string>('');
-
-
-  const { width, height } = Dimensions.get('window');
-
-  const onRefresh = () => {
-    setRefreshing(true);
-
-    // Simulate a network request or data refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000); // 2 seconds delay
-  };
-
-
-  const handleSearch = () => {
-    console.log('searching for:', height);
-  }
-
-  return (
-
-    <View style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto" }}>
-      <View style={{ width: 64, height: 64, position: "fixed", top: height - (64 + 200), right: -(width / 2 - (50)), zIndex: 5, borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <AddButton />
-      </View>
-
-      <ScrollView style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        const sleep = (ms: number) => {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
-      >
 
-        <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative"}}>
-          <TextInput
-            style={styles.input}
-            placeholder="Search"
-            value={query}
-            onChangeText={setQuery}
-            placeholderTextColor={'#4D4C71'}
-            onSubmitEditing={handleSearch}
-          />
-          <View style={{ width: 64, height: 64, position: "absolute", left: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <Ionicons name="search" size={32} color="white" />
-          </View>
-          <Pressable style={{ width: 64, height: 64, position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}
-            onPressIn={() => setQuery('')}
-          >
-            {
-              query.length > 0 &&
-              <FontAwesome6 name="xmark" size={24} color="white" />
+        async function getAllMainTask() {
+            const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
+      FROM tasks t
+      JOIN main_tasks mt ON t.main_task_id = mt.id
+`);
+
+            if (result) {
+                const tasksNotHabit: TaskItemNotHabitType[] = []
+
+
+                result.map((item) => {
+                    if (item.main_task_type !== 'habit') {
+                        const indexOfTask = tasksNotHabit.findIndex((task) => task.id === item.main_task_id.toString())
+                        if (indexOfTask === -1) {
+                            tasksNotHabit.push({
+                                id: item.main_task_id.toString(),
+                                primary_color: item.primary_color,
+                                title: item.main_task_title,
+                                dueDate: item.dueDate,
+                                createDate: item.createDate,
+                                data: [item]
+                            })
+                        } else {
+                            tasksNotHabit[indexOfTask].data.push(item)
+                        }
+                    }
+                })
+
+                setAllTasks({
+                    ...allTasks,
+                    tasks: tasksNotHabit,
+                    loading: false
+                })
             }
-          </Pressable>
-        </View>
+        }
 
-        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={true} boxCount={4} />
-        <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-          <TaskItem cardContent="Drink water" primaryColor="#FF748B" />
-          <TaskItem cardContent="Go To The Gym" primaryColor="#3068DF" />
-          <TaskItem cardContent="Eat More Clean" primaryColor="#6861ED" />
-          <TaskItem cardContent="Doing Some Coding" primaryColor="#FF748B" />
-          <TaskItem cardContent="Sleep Well Is Best Medicine" primaryColor="#FF748B" />
-        </View>
+        getAllMainTask()
 
-        <BlockHeader isShowSubTitle={false} mainTitle="All Task" subTitle="see all" isShowBoxCount={true} boxCount={10} />
-        <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 80 }}>
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            {/* // Group 1: Reading */}
-            <MainTask mainTaskName="Reading Activities" overAllPercent={70} remainTimePercent={90} primaryColor="#FF9A6B" />
-            {/* // Group 1: Reading */}
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#FF9A6B", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF9A6B", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF9A6B", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Read a Book" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Pick a New Book to Read" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Set a Reading Goal" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Highlight Key Points in the Book" primaryColor="#FF9A6B" isSmallVersion={true} />
-                <TaskItem cardContent="Discuss the Book with a Friend" primaryColor="#FF9A6B" isSmallVersion={true} />
-              </View>
+    }, [])
+
+
+    const handleSearch = () => {
+        console.log('searching for:', height);
+    }
+
+
+    const totalTask = useMemo(() => {
+        return allTasks.tasks.reduce((acc, item) => acc + item.data.length, 0)
+    }, [allTasks])
+
+
+    return (
+
+        <View style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto" }}>
+            <View style={{ width: 64, height: 64, position: "fixed", top: height - (64 + 200), right: -(width / 2 - (50)), zIndex: 5, borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <AddButton />
             </View>
 
-          </View>
+            <ScrollView style={styles.container}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+            >
+
+                <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative" }}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Search"
+                        value={query}
+                        onChangeText={setQuery}
+                        placeholderTextColor={'#4D4C71'}
+                        onSubmitEditing={handleSearch}
+                    />
+                    <View style={{ width: 64, height: 64, position: "absolute", left: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <Ionicons name="search" size={32} color="white" />
+                    </View>
+                    <Pressable style={{ width: 64, height: 64, position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}
+                        onPressIn={() => setQuery('')}
+                    >
+                        {
+                            query.length > 0 &&
+                            <FontAwesome6 name="xmark" size={24} color="white" />
+                        }
+                    </Pressable>
+                </View>
 
 
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            {/* // Group 2: Meditation */}
-            <MainTask mainTaskName="Meditation Practice" overAllPercent={80} remainTimePercent={85} primaryColor="#4CAF50" />
-            {/* // Group 2: Meditation */}
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#4CAF50", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#4CAF50", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#4CAF50", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Practice Meditation" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Set a Timer for Meditation" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Find a Quiet Space to Meditate" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Follow a Guided Meditation Video" primaryColor="#4CAF50" isSmallVersion={true} />
-                <TaskItem cardContent="Reflect on Your Meditation Session" primaryColor="#4CAF50" isSmallVersion={true} />
-              </View>
-            </View>
-
-          </View>
-
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            <MainTask mainTaskName="Walking for Wellness" overAllPercent={60} remainTimePercent={75} primaryColor="#FFCC33" />
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#FFCC33", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FFCC33", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FFCC33", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Take a Walk Outside" primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Plan a Walking Route" primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Take a Photo of Something " primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Track Steps Using a Fitness App" primaryColor="#FFCC33" isSmallVersion={true} />
-                <TaskItem cardContent="Walk in a New Neighborhood" primaryColor="#FFCC33" isSmallVersion={true} />
-              </View>
-            </View>
-          </View>
-
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-
-            <MainTask mainTaskName="Skill Development" overAllPercent={90} remainTimePercent={95} primaryColor="#8E44AD" />
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#8E44AD", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#8E44AD", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#8E44AD", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Learn a New Skill" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Watch a Tutorial on the Skill" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Practice the Skill for 15 Minutes" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Set a Progress Goal for the Skill" primaryColor="#8E44AD" isSmallVersion={true} />
-                <TaskItem cardContent="Share What You Learned Online" primaryColor="#8E44AD" isSmallVersion={true} />
-              </View>
-            </View>
-
-          </View>
+                <BlockHeader isShowSubTitle={false} mainTitle="All Task" subTitle="see all" isShowBoxCount={true} boxCount={totalTask} />
+                <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 90 }}>
+                    {
+                        allTasks.tasks.length > 0 && !allTasks.loading && allTasks.tasks.map((item, index) =>
+                            <TaskTree key={item.id} mainTaskId={item.id} mainTaskName={item.title} color={item.primary_color} data={item.data} dueDate={item.dueDate} taskCreatDay={item.createDate} />
+                        )
+                    }
+                    {
+                        (allTasks.tasks.length === 0 || allTasks.loading) && (
+                            <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
+                                <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
+                            </View>
+                        )
+                    }
+                    {
+                        allTasks.loading && (
+                            <>
+                                <TaskTreePlaceHolder />
+                                <Spacer height={14} />
+                                <TaskTreePlaceHolder />
+                            </>
+                        )
+                    }
 
 
+                </View>
 
-          <View style={{ flex: 1, width: "100%", height: "auto", marginBottom: 20 }}>
-            <MainTask mainTaskName="Healthy Eating Goals" overAllPercent={65} remainTimePercent={80} primaryColor="#FF5722" />
-            <View style={{ flexDirection: 'row', width: '100%', height: "auto", overflow: 'hidden', marginTop: 12, justifyContent: "flex-end" }}>
-              <View style={{ width: 2, height: "100%", backgroundColor: "#FF5722", borderRadius: 20, position: 'relative' }}>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF5722", position: "absolute", top: 0, left: -8 }}></View>
-                <View style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "#FF5722", position: "absolute", bottom: 0, left: -8 }}></View>
-              </View>
-              <View style={{ flexDirection: 'column', width: '95%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, paddingLeft: 10 }}>
-                <TaskItem cardContent="Prepare Healthy Meals" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Plan a Weekly Meal Schedule" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Buy Fresh Ingredients" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Try a New Healthy Recipe" primaryColor="#FF5722" isSmallVersion={true} />
-                <TaskItem cardContent="Pack a Healthy Lunch" primaryColor="#FF5722" isSmallVersion={true} />
-              </View>
-            </View>
+            </ScrollView >
 
-          </View>
-
-        </View>
-
-      </ScrollView>
-
-    </View>
-  )
+        </View >
+    )
 
 
 }
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: '#1A182C',
-    width: "100%",
-    padding: 20,
-    marginTop: -64,
-  },
-  input: {
-    height: "100%",
-    paddingHorizontal: 64,
-    marginBottom: 10,
-    borderRadius: 12,
-    color: '#4D4C71',
-    fontSize: 20,
-  },
+    container: {
+        flex: 1,
+        // backgroundColor: '#1A182C',
+        width: "100%",
+        padding: 20,
+        marginTop: -64,
+    },
+    input: {
+        height: "100%",
+        paddingHorizontal: 64,
+        marginBottom: 10,
+        borderRadius: 12,
+        color: '#4D4C71',
+        fontSize: 20,
+    },
 })
 
-export default GroupTask
+export default AllTask

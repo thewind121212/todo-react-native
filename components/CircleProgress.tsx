@@ -42,9 +42,6 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
     useEffect(() => {
         animatedProgress.value = withTiming(progress, { duration: 1000 });
 
-        return () => {
-            animatedProgress.value = 0;
-        };
     }, [progress]);
 
     return (
@@ -60,7 +57,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
                     fill="none"
                 />
             </Svg>
-            <Svg width={size} height={size} style={{ zIndex: 2}}>
+            <Svg width={size} height={size} style={{ zIndex: 2 }}>
                 <Circle
                     cx={size / 2}
                     cy={size / 2}
