@@ -26,15 +26,65 @@ export async function checkCountTable(db: SQLiteDatabase, table: string) {
 export async function migrateDbIfNeeded(db: SQLiteDatabase) {
 
 
-    const DATABASE_VERSION = 1;
-    let result = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
-    let currentDbVersion = result ? result.user_version : 0;
 
-    if (currentDbVersion >= DATABASE_VERSION) {
-        return;
+
+
+
+    //first migration
+
+    //create main_tasks table 
+    if (!await checkIfTableExist(db, 'main_tasks')) {
+        await db.execAsync(`
+PRAGMA journal_mode = 'wal';
+CREATE TABLE main_tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  color TEXT NOT NULL,
+  type TEXT CHECK (type IN ('habit', 'task')) NOT NULL,
+  create_date DATETIME DEFAULT CURRENT_TIMESTAMP, 
+  update_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  due_day DATE,
+  CHECK (
+    (type = 'task' AND due_day IS NOT NULL)
+    OR
+    (type = 'habit' AND due_day IS NULL)
+  )
+);
+`);
+
+        if (await checkCountTable(db, 'main_tasks') === 0) {
+            await db.execAsync(`INSERT INTO main_tasks (title, color, type, due_day) VALUES
+      ('Morning Meditation', '#4CAF50', 'habit', NULL),
+      ('Evening Journaling', '#FF748B', 'habit', NULL),
+      ('Daily Workout', '#FFA500', 'habit', NULL),
+      ('Gratitude Practice', '#6A5ACD', 'habit', NULL),
+      ('Reading Habit', '#1E90FF', 'habit', NULL),
+      ('Submit Project Proposal', '#FF5733', 'task', '2025-01-15'),
+      ('Prepare Budget Plan', '#FFD700', 'task', '2025-01-20'),
+      ('Team Meeting', '#00BFFF', 'task', '2025-01-10'),
+      ('Design Review', '#FF8C00', 'task', '2025-01-18'),
+      ('Write Blog Post', '#7CFC00', 'task', '2025-01-22');`)
+        }
     }
 
 
+
+    if (!await checkIfTableExist(db, 'tasks')) {
+        await db.execAsync(`
+CREATE TABLE IF NOT EXISTS tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  completed INTEGER DEFAULT 0, 
+  priority INTEGER NOT NULL DEFAULT 0 CHECK (priority IN (0, 1, 2)), 
+  main_task_id INTEGER NOT NULL,
+  create_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (main_task_id) REFERENCES main_tasks (id) ON DELETE CASCADE
+);
+`);
+
+
+    }
 
     if (await checkCountTable(db, 'tasks') === 0) {
 
@@ -84,69 +134,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
             `)
     }
 
-    //first migration
-
-    if (currentDbVersion === 0) {
-        //create main_tasks table 
-        if (!await checkIfTableExist(db, 'main_tasks')) {
-            await db.execAsync(`
-PRAGMA journal_mode = 'wal';
-CREATE TABLE main_tasks (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  color TEXT NOT NULL,
-  type TEXT CHECK (type IN ('habit', 'task')) NOT NULL,
-  create_date DATETIME DEFAULT CURRENT_TIMESTAMP, 
-  update_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-  due_day DATE,
-  CHECK (
-    (type = 'task' AND due_day IS NOT NULL)
-    OR
-    (type = 'habit' AND due_day IS NULL)
-  )
-);
-`);
-
-            if (await checkCountTable(db, 'main_tasks') === 0) {
-                await db.execAsync(`INSERT INTO main_tasks (title, color, type, due_day) VALUES
-      ('Morning Meditation', '#4CAF50', 'habit', NULL),
-      ('Evening Journaling', '#FF748B', 'habit', NULL),
-      ('Daily Workout', '#FFA500', 'habit', NULL),
-      ('Gratitude Practice', '#6A5ACD', 'habit', NULL),
-      ('Reading Habit', '#1E90FF', 'habit', NULL),
-      ('Submit Project Proposal', '#FF5733', 'task', '2025-01-15'),
-      ('Prepare Budget Plan', '#FFD700', 'task', '2025-01-20'),
-      ('Team Meeting', '#00BFFF', 'task', '2025-01-10'),
-      ('Design Review', '#FF8C00', 'task', '2025-01-18'),
-      ('Write Blog Post', '#7CFC00', 'task', '2025-01-22');`)
-            }
-        }
 
 
 
-        if (!await checkIfTableExist(db, 'tasks')) {
-            await db.execAsync(`
-CREATE TABLE IF NOT EXISTS tasks (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  completed INTEGER DEFAULT 0, 
-  priority INTEGER NOT NULL DEFAULT 0 CHECK (priority IN (0, 1, 2)), 
-  main_task_id INTEGER NOT NULL,
-  create_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (main_task_id) REFERENCES main_tasks (id) ON DELETE CASCADE
-);
-`);
-
-
-        }
-
-
-    }
-
-
-    if (currentDbVersion === 1) {
-
-    }
-    await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }

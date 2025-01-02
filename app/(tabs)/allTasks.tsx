@@ -45,39 +45,50 @@ const AllTask = () => {
         }
 
         async function getAllMainTask() {
-            const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
-      FROM tasks t
-      JOIN main_tasks mt ON t.main_task_id = mt.id
-`);
+            await sleep(1000)
 
-            if (result) {
-                const tasksNotHabit: TaskItemNotHabitType[] = []
+            try {
+                const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
+            FROM tasks t
+            JOIN main_tasks mt ON t.main_task_id = mt.id
+            `);
+
+                if (result) {
+                    const tasksNotHabit: TaskItemNotHabitType[] = []
 
 
-                result.map((item) => {
-                    if (item.main_task_type !== 'habit') {
-                        const indexOfTask = tasksNotHabit.findIndex((task) => task.id === item.main_task_id.toString())
-                        if (indexOfTask === -1) {
-                            tasksNotHabit.push({
-                                id: item.main_task_id.toString(),
-                                primary_color: item.primary_color,
-                                title: item.main_task_title,
-                                dueDate: item.dueDate,
-                                createDate: item.createDate,
-                                data: [item]
-                            })
-                        } else {
-                            tasksNotHabit[indexOfTask].data.push(item)
+                    result.map((item) => {
+                        if (item.main_task_type !== 'habit') {
+                            const indexOfTask = tasksNotHabit.findIndex((task) => task.id === item.main_task_id.toString())
+                            if (indexOfTask === -1) {
+                                tasksNotHabit.push({
+                                    id: item.main_task_id.toString(),
+                                    primary_color: item.primary_color,
+                                    title: item.main_task_title,
+                                    dueDate: item.dueDate,
+                                    createDate: item.createDate,
+                                    data: [item]
+                                })
+                            } else {
+                                tasksNotHabit[indexOfTask].data.push(item)
+                            }
                         }
-                    }
-                })
+                    })
 
+                    setAllTasks({
+                        ...allTasks,
+                        tasks: tasksNotHabit,
+                        loading: false
+                    })
+                }
+
+            } catch (error) {
                 setAllTasks({
                     ...allTasks,
-                    tasks: tasksNotHabit,
                     loading: false
                 })
             }
+
         }
 
         getAllMainTask()
@@ -131,7 +142,7 @@ const AllTask = () => {
                 </View>
 
 
-                <BlockHeader isShowSubTitle={false} mainTitle="All Task" subTitle="see all" isShowBoxCount={true} boxCount={totalTask} />
+                <BlockHeader isShowSubTitle={false} mainTitle="All Task" subTitle="see all" isShowBoxCount={totalTask > 0 ? true : false} boxCount={totalTask} />
                 <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 90 }}>
                     {
                         allTasks.tasks.length > 0 && !allTasks.loading && allTasks.tasks.map((item, index) =>
@@ -139,7 +150,7 @@ const AllTask = () => {
                         )
                     }
                     {
-                        (allTasks.tasks.length === 0 || allTasks.loading) && (
+                        (allTasks.tasks.length === 0 && !allTasks.loading) && (
                             <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
                                 <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
                             </View>

@@ -14,13 +14,13 @@ export default function RootLayout() {
 
 
   return (
-    <SQLiteProvider databaseName="todo.db" onInit={migrateDbIfNeeded}>
-      <SheetProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </SheetProvider>
-    </SQLiteProvider>
+      <SQLiteProvider databaseName="todo.db" onInit={migrateDbIfNeeded}>
+        <SheetProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </SheetProvider>
+      </SQLiteProvider>
   )
 }
 

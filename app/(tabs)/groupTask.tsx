@@ -1,5 +1,5 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, FlatList } from 'react-native'
+import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { SheetManager } from 'react-native-actions-sheet';
@@ -9,7 +9,6 @@ import BlockHeader from '@/components/BlockHeader'
 import GroupCard from '@/components/GroupCard';
 import { MainTaskType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton'
-import { isLoading } from 'expo-font';
 
 
 
@@ -60,18 +59,26 @@ const AllTasks = () => {
 
     async function getAllMainTask() {
 
-      await sleep(1500);
+      await sleep(1000)
+      try {
+        const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
+        if (result) {
+          const habit = result.filter((item) => item.type === 'habit');
+          const task = result.filter((item) => item.type === 'task');
+          setAllTasks({
+            ...allTasks,
+            habit,
+            task,
+            isLoading: false
+          })
+        }
 
-      const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
-      if (result) {
-        const habit = result.filter((item) => item.type === 'habit');
-        const task = result.filter((item) => item.type === 'task');
+      } catch (error) {
         setAllTasks({
           ...allTasks,
-          habit,
-          task,
           isLoading: false
         })
+
       }
     }
 
@@ -116,7 +123,7 @@ const AllTasks = () => {
         </View>
 
 
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.habit.length} isShowButton={true}
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} isShowButton={true}
           buttonEvent={() => SheetManager.show('create-main-task')}
         />
 
@@ -131,7 +138,13 @@ const AllTasks = () => {
               )
             })
           }
-
+          {
+            (allTasks.habit.length === 0 && !allTasks.isLoading) && (
+              <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
+                <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
+              </View>
+            )
+          }
           {
             allTasks.isLoading && (
               <>
@@ -145,7 +158,7 @@ const AllTasks = () => {
 
 
         <View style={{ marginTop: 40 }}></View>
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.task.length} isShowButton={true} />
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.task.length} isShowButton={true} />
         <View
           style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
         >
@@ -156,7 +169,13 @@ const AllTasks = () => {
               )
             })
           }
-
+          {
+            (allTasks.task.length === 0 && !allTasks.isLoading) && (
+              <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
+                <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
+              </View>
+            )
+          }
           {
             allTasks.isLoading && (
               <>

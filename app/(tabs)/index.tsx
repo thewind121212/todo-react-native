@@ -22,13 +22,9 @@ import { Skeleton } from 'moti/skeleton'
 
 
 const TOTAL_TASKS = 10
-const COMPLETED_TASKS = 8
-
-
-const TOTAL_TASKS_2 = 40
-const COMPLETED_TASKS_2 = 20
 
 const Index = () => {
+
   const { isFinished } = useOnboardingPersisStore()
   // DEBUGER
   const db = SQLite.openDatabaseSync("todo.db");
@@ -77,44 +73,55 @@ const Index = () => {
     }
 
     async function getAllMainTask() {
-      const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
+
+      await sleep(1000)
+
+      try {
+        const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
       FROM tasks t
       JOIN main_tasks mt ON t.main_task_id = mt.id
-`);
+      `);
 
-      if (result) {
-        const habit: TaskItemQueryType[] = []
-        const tasksNotHabit: TaskItemNotHabitType[] = []
+        if (result) {
+          const habit: TaskItemQueryType[] = []
+          const tasksNotHabit: TaskItemNotHabitType[] = []
 
 
-        result.map((item) => {
-          if (item.main_task_type === 'habit') {
-            habit.push(item)
-          }
-          else {
-            const indexOfTask = tasksNotHabit.findIndex((task) => task.id === item.main_task_id.toString())
-            if (indexOfTask === -1) {
-              tasksNotHabit.push({
-                id: item.main_task_id.toString(),
-                primary_color: item.primary_color,
-                title: item.main_task_title,
-                dueDate: item.dueDate,
-                createDate: item.createDate,
-                data: [item]
-              })
-            } else {
-              tasksNotHabit[indexOfTask].data.push(item)
+          result.map((item) => {
+            if (item.main_task_type === 'habit') {
+              habit.push(item)
             }
-          }
-        })
+            else {
+              const indexOfTask = tasksNotHabit.findIndex((task) => task.id === item.main_task_id.toString())
+              if (indexOfTask === -1) {
+                tasksNotHabit.push({
+                  id: item.main_task_id.toString(),
+                  primary_color: item.primary_color,
+                  title: item.main_task_title,
+                  dueDate: item.dueDate,
+                  createDate: item.createDate,
+                  data: [item]
+                })
+              } else {
+                tasksNotHabit[indexOfTask].data.push(item)
+              }
+            }
+          })
 
+          setAllTasks({
+            ...allTasks,
+            habit: habit,
+            tasks: tasksNotHabit,
+            loading: false
+          })
+        }
+      } catch (error) {
         setAllTasks({
           ...allTasks,
-          habit: habit,
-          tasks: tasksNotHabit,
           loading: false
         })
       }
+
     }
 
     getAllMainTask()

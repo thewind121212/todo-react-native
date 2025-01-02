@@ -44,23 +44,32 @@ const AllHabits = () => {
     }
 
     async function getAllMainTask() {
-      const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
+      await sleep(1000)
+
+      try {
+        const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
       FROM tasks t
       JOIN main_tasks mt ON t.main_task_id = mt.id
-`);
+      `);
 
-      if (result) {
-        const habit: TaskItemQueryType[] = []
+        if (result) {
+          const habit: TaskItemQueryType[] = []
 
-        result.map((item) => {
-          if (item.main_task_type === 'habit') {
-            habit.push(item)
-          }
-        })
+          result.map((item) => {
+            if (item.main_task_type === 'habit') {
+              habit.push(item)
+            }
+          })
 
+          setAllTasks({
+            ...allTasks,
+            habit: habit,
+            loading: false
+          })
+        }
+      } catch (error) {
         setAllTasks({
           ...allTasks,
-          habit: habit,
           loading: false
         })
       }
@@ -112,7 +121,7 @@ const AllHabits = () => {
           </Pressable>
         </View>
 
-        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.habit.length} />
+        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} />
         <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 110, }}>
           {
             allTasks.habit.length > 0 && !allTasks.loading && allTasks.habit.map((item) =>
@@ -120,7 +129,7 @@ const AllHabits = () => {
             )
           }
           {
-            (allTasks.habit.length === 0 || allTasks.loading) && (
+            (allTasks.habit.length === 0 && !allTasks.loading) && (
               <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
                 <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
               </View>
