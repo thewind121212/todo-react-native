@@ -11,6 +11,7 @@ import Smile from '@/assets/emoji/smiling-svgrepo-com.svg'
 import Happy from '@/assets/emoji/happy-svgrepo-com.svg'
 // @ts-ignore
 import Love from '@/assets/emoji/in-love-svgrepo-com.svg'
+import { Skeleton } from 'moti/skeleton';
 
 
 
@@ -38,7 +39,7 @@ const OverviewHomeHabit = ({ doneTask, allTasks }: { doneTask: number, allTasks:
                 <View style={{ width: "100%", justifyContent: 'center', alignItems: 'center', display: 'flex', height: "auto" }}>
                     <View style={{ width: 54, height: 54, zIndex: 2 }}>
                         {
-                            emojiRender(percentComplete, 54)
+                            emojiRender(allTasks === 0 ? 100 : percentComplete, 54)
                         }
                     </View>
                     <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: '20%', backgroundColor: "#fff", marginTop: -6, paddingHorizontal: 8, paddingVertical: 4, zIndex: 1 }}>
@@ -46,7 +47,7 @@ const OverviewHomeHabit = ({ doneTask, allTasks }: { doneTask: number, allTasks:
                     </View>
                 </View>
                 <View style={{ position: 'absolute', top: 0, left: 0, flex: 1, justifyContent: 'center', alignItems: 'center', display: 'flex', width: "100%", aspectRatio: '1/1' }}>
-                    <CircularProgress progress={percentComplete} strokeWidth={7} strokeWidthFull={7} size={(160)} rotate='-90' color='#6861ED' />
+                    <CircularProgress progress={allTasks === 0 ? 100 : percentComplete} strokeWidth={7} strokeWidthFull={7} size={(160)} rotate='-90' color='#6861ED' />
 
                 </View>
             </View>
@@ -65,6 +66,29 @@ const OverviewHomeHabit = ({ doneTask, allTasks }: { doneTask: number, allTasks:
     )
 }
 
+
+
+export const OverviewHabitPlaceHolder = () => {
+    const { width } = Dimensions.get('window')
+
+    return (
+        <Skeleton.Group show={true}>
+            <View style={{ width: '100%', height: 'auto', display: 'flex', flexDirection: 'row', gap: 12, marginBottom: 20 }}>
+                <View style={{ justifyContent: 'center', alignItems: 'center', position: 'relative', aspectRatio: '1/1', width: (width * 1 / 2 - 20) - 6, borderRadius: 16, maxWidth: "100%" }}>
+                    <Skeleton colorMode={'dark'} width={"100%"} height={"100%"} colors={["#222239", "#2c2c49"]} />
+                </View>
+                <View style={{ justifyContent: 'space-between', alignItems: 'center', aspectRatio: '1/1', width: (width * 1 / 2 - 20) - 6, borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, }}>
+                    <Skeleton colorMode={'dark'} width={"100%"} height={((width * 1 / 2 - 20) - 6) / 2 - 6} radius={16} colors={["#222239", "#2c2c49"]} />
+                    <Skeleton colorMode={'dark'} width={"100%"} height={((width * 1 / 2 - 20) - 6) / 2 - 6} radius={16} colors={["#222239", "#2c2c49"]} />
+                </View>
+            </View>
+
+
+
+        </Skeleton.Group>
+
+    )
+}
 
 const styles = StyleSheet.create({
     overviewBlock: {
