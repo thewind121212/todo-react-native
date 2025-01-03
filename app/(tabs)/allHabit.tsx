@@ -44,7 +44,7 @@ const AllHabits = () => {
     }
 
     async function getAllMainTask() {
-      await sleep(1000)
+      await sleep(300)
 
       try {
         const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate

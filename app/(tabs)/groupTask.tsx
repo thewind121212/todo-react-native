@@ -59,7 +59,7 @@ const AllTasks = () => {
 
     async function getAllMainTask() {
 
-      await sleep(1000)
+      await sleep(300)
       try {
         const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
         if (result) {

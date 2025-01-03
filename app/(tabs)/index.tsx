@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Dimensions, Modal } from 'react-native'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Modal } from 'react-native'
+import React, { useEffect, useMemo, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 
 
-import OverviewHomeTask from '@/components/OverviewHomeTask'
+import OverviewHomeTask, { OverviewHomeTaskPlaceHolder } from '@/components/OverviewHomeTask'
 import { useOnboardingPersisStore } from '@/store/useOnboarding'
-import OverviewHomeHabit from '@/components/OverviewHomeHabit'
+import OverviewHomeHabit, { OverviewHabitPlaceHolder } from '@/components/OverviewHomeHabit'
 import TaskItem from '@/components/TaskItem'
 import MainTask from '@/components/MainTask'
 import OnBoarding from '@/components/OnBoarding'
@@ -45,11 +45,6 @@ const Index = () => {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = () => {
     setRefreshing(true);
-
-    // Simulate a network request or data refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000); // 2 seconds delay
   };
 
 
@@ -74,7 +69,7 @@ const Index = () => {
 
     async function getAllMainTask() {
 
-      await sleep(1000)
+      await sleep(300)
 
       try {
         const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
@@ -114,19 +109,21 @@ const Index = () => {
             tasks: tasksNotHabit,
             loading: false
           })
+          setRefreshing(false)
         }
       } catch (error) {
         setAllTasks({
           ...allTasks,
           loading: false
         })
+        setRefreshing(false)
       }
 
     }
 
     getAllMainTask()
 
-  }, [])
+  }, [refreshing])
 
 
   const completedHabit = useMemo(() => {
@@ -151,6 +148,52 @@ const Index = () => {
 
 
 
+
+  const taskTransform: {
+    fullPercent: number,
+    taskRandom: Array<TaskItemNotHabitType & { completePercent: number }>
+    modifiyTask: Array<TaskItemNotHabitType & { completePercent: number, remainTimePercent: number }>
+  } = useMemo(() => {
+
+    let fullPercent = 0
+    let taskRandom: Array<TaskItemNotHabitType & { completePercent: number }> = []
+    let modifiyTask: Array<TaskItemNotHabitType & { completePercent: number, remainTimePercent: number }> = []
+
+    for (const task of allTasks.tasks) {
+      let taskDone = 0
+      for (const subTask of task.data) {
+        taskDone += subTask.completed ? 1 : 0
+      }
+      const completeItem = taskDone / task.data.length * 100
+
+      fullPercent += completeItem
+
+      const dueDayTimeStamp = new Date(task.dueDate)
+      const createDayTimeStamp = new Date(task.createDate)
+      const today = new Date()
+      const re = 100 - (today.getTime() - createDayTimeStamp.getTime()) / (dueDayTimeStamp.getTime() - createDayTimeStamp.getTime()) * 100
+      const newTask = { ...task, completePercent: completeItem, remainTimePercent: re }
+      modifiyTask.push(newTask)
+
+      if (taskRandom.length < 2 && completeItem < 100 && completeItem > 0) {
+        taskRandom.push(newTask)
+      }
+    }
+
+
+    return {
+      fullPercent,
+      taskRandom,
+      modifiyTask
+    }
+  }, [allTasks.tasks])
+
+
+
+  const { fullPercent, taskRandom, modifiyTask } = taskTransform
+
+
+
   return (
     <ScrollView style={styles.container}
       refreshControl={
@@ -170,9 +213,27 @@ const Index = () => {
       </View>
 
       <BlockHeader isShowSubTitle={false} mainTitle="Habit Overview" subTitle="see all" isShowBoxCount={false} boxCount={TOTAL_TASKS} />
-      <OverviewHomeHabit doneTask={completedHabit} allTasks={allTasks.habit.length} />
+      {
+        allTasks.habit.length > 0 && !allTasks.loading && (
+          <OverviewHomeHabit doneTask={completedHabit} allTasks={allTasks.habit.length} />
+        )
+      }
+      {
+        (allTasks.habit.length === 0 || allTasks.loading) && (
+          <OverviewHabitPlaceHolder />
+        )
+      }
       <BlockHeader isShowSubTitle={false} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={false} boxCount={1} />
-      <OverviewHomeTask />
+      {
+        allTasks.tasks.length > 0 && !allTasks.loading && (
+          <OverviewHomeTask tasks={allTasks.tasks} fullPercent={fullPercent} taskRandom={taskRandom} />
+        )
+      }
+      {
+        (allTasks.habit.length === 0 || allTasks.loading) && (
+          <OverviewHomeTaskPlaceHolder />
+        )
+      }
       <BlockHeader isShowSubTitle={true} mainTitle="Recent Habit" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.habit.length} />
       <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
         {
@@ -201,12 +262,22 @@ const Index = () => {
       <BlockHeader isShowSubTitle={true} mainTitle="Recent Task" subTitle="see all" isShowBoxCount={true} boxCount={12} />
 
       <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-        <MainTask mainTaskName="Doing Some Coding" overAllPercent={80} remainTimePercent={100} primaryColor='#D7BDE2' />
-        <MainTask mainTaskName="Leet Code 150 Interview" overAllPercent={40} remainTimePercent={100} primaryColor='#FFF5BA' />
-        <MainTask mainTaskName="UI Design Mockups" overAllPercent={75} remainTimePercent={90} primaryColor='#FFD1DC' />
-        <MainTask mainTaskName="Database Optimization" overAllPercent={60} remainTimePercent={70} primaryColor='#B2E7E8' />
-        <MainTask mainTaskName="Team Presentation Prep" overAllPercent={50} remainTimePercent={60} primaryColor='#D7BDE2' />
-        <MainTask mainTaskName="API Integration" overAllPercent={30} remainTimePercent={40} primaryColor='#FFF5BA' />
+
+        {
+          modifiyTask.length > 0 && !allTasks.loading && modifiyTask.map((item) =>
+            <MainTask key={item.id} mainTaskName={item.title} overAllPercent={item.completePercent} remainTimePercent={item.remainTimePercent} primaryColor={item.primary_color} />
+          )
+        }
+        {
+          allTasks.loading && (
+            <>
+              {[...Array(10).keys()].map((_, index) => (
+                <Skeleton key={index + "groupTaskSkeletonHabit"} colorMode={'dark'} width={'100%'} height={64} colors={["#222239", "#2c2c49"]} />
+              ))}
+            </>
+          )
+        }
+
       </View>
 
     </ScrollView>
