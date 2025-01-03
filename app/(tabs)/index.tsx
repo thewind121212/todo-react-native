@@ -168,10 +168,11 @@ const Index = () => {
 
       fullPercent += completeItem
 
-      const dueDayTimeStamp = new Date(task.dueDate)
-      const createDayTimeStamp = new Date(task.createDate)
-      const today = new Date()
-      const re = 100 - (today.getTime() - createDayTimeStamp.getTime()) / (dueDayTimeStamp.getTime() - createDayTimeStamp.getTime()) * 100
+      const [year, month, day] = task.dueDate.split('-').map(Number);
+      const dueDayTimeStamp = new Date(year, month - 1, day).getTime()
+      const createDayTimeStamp = new Date(task.createDate).getTime()
+      const today = new Date().getTime()
+      const re = 100 - ((today - createDayTimeStamp) / (dueDayTimeStamp - createDayTimeStamp) * 100)
       const newTask = { ...task, completePercent: completeItem, remainTimePercent: re }
       modifiyTask.push(newTask)
 

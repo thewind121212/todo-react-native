@@ -33,14 +33,14 @@ const TaskTree = ({
 
 
     const remainTimePercent = useMemo(() => {
+        const [year, month, day] = dueDate.split('-').map(Number);
+        const dueDayTimeStamp = new Date(year, month - 1, day).getTime()
+        const createDayTimeStamp = new Date(taskCreatDay).getTime()
+        const today = new Date().getTime()
 
-        const dueDayTimeStamp = new Date(dueDate)
-        const createDayTimeStamp = new Date(taskCreatDay)
-        const today = new Date()
+        return ((dueDayTimeStamp - today) / (dueDayTimeStamp - createDayTimeStamp)) * 100
 
-        return 100 - (today.getTime() - createDayTimeStamp.getTime()) / (dueDayTimeStamp.getTime() - createDayTimeStamp.getTime()) * 100
-
-    }, [dataTasks])
+    }, [dataTasks, dueDate, taskCreatDay])
 
 
     const setDoneOutFunc = (id: number) => {

@@ -47,7 +47,7 @@ type Props = {
 const MainTask = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColor, isRenderProgress = true }: Props) => {
 
 
-    const translateX = useSharedValue<any>("-100%")
+    const translateX = useSharedValue<any>("100%")
     const { width } = Dimensions.get('window');
 
     const translateYstyle = useAnimatedStyle(() => {
