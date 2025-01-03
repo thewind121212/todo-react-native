@@ -60,7 +60,7 @@ function TaskInfoRight({ percent, content, color }: { percent: number, content: 
     return (
         <View style={{ width: "100%", height: 'auto', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', gap: 12, paddingRight: 30 }}>
             <View style={{ width: 16, height: 16, borderRadius: "50%", backgroundColor: color }} />
-            <Text style={{ fontSize: 16, color: '#fff', fontWeight: 600, }} >{content}</Text>
+            <Text style={{ fontSize: 16, color: '#fff', fontWeight: 600, paddingRight: 20 }} >{content}</Text>
         </View>
     )
 }

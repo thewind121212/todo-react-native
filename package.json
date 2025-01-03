@@ -50,7 +50,8 @@
     "react-native-system-navigation-bar": "^2.6.4",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
-    "zustand": "^5.0.2"
+    "zustand": "^5.0.2",
+    "expo-dev-client": "~5.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

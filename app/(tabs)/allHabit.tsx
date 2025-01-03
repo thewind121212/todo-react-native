@@ -1,14 +1,17 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
+import { View, StyleSheet, TextInput, Dimensions, Pressable, Text, RefreshControl, StatusBar } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
+
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useEffect, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import TaskItem from '@/components/TaskItem'
-import AddButton from '@/components/AddButton';
 import { useSQLiteContext } from 'expo-sqlite';
 import { TaskItemQueryType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton';
+import Animated, { LinearTransition } from 'react-native-reanimated';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { asCalendarConsumer } from 'react-native-calendars';
 
 
 const AllHabits = () => {
@@ -24,17 +27,41 @@ const AllHabits = () => {
   const [query, setQuery] = useState<string>('');
   const db = useSQLiteContext();
 
-  const { width, height } = Dimensions.get('window');
+  const { height } = Dimensions.get('window');
 
   const onRefresh = () => {
     setRefreshing(true);
-
-    // Simulate a network request or data refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000); // 2 seconds delay
   };
 
+
+  const onTaskDone = (id: number) => {
+    const taskIndex = allTasks.habit.findIndex(task => task.id === id);
+
+    if (taskIndex === -1) return;
+
+    const currentTask = allTasks.habit[taskIndex];
+
+    const updatedTask: TaskItemQueryType = {
+      ...currentTask,
+      completed: currentTask.completed === 0 ? 1 : 0
+    };
+
+    const newHabit = [
+      ...allTasks.habit.slice(0, taskIndex),
+      ...allTasks.habit.slice(taskIndex + 1)
+    ];
+
+    if (updatedTask.completed === 1) {
+      newHabit.push(updatedTask);
+    } else {
+      newHabit.unshift(updatedTask);
+    }
+
+    setAllTasks({
+      ...allTasks,
+      habit: newHabit
+    });
+  };
 
 
   useEffect(() => {
@@ -56,8 +83,10 @@ const AllHabits = () => {
           const habit: TaskItemQueryType[] = []
 
           result.map((item) => {
-            if (item.main_task_type === 'habit') {
+            if (item.main_task_type === 'habit' && item.completed === 1) {
               habit.push(item)
+            } else if (item.main_task_type === 'habit' && item.completed === 0) {
+              habit.unshift(item)
             }
           })
 
@@ -66,40 +95,46 @@ const AllHabits = () => {
             habit: habit,
             loading: false
           })
+
+          setRefreshing(false);
         }
       } catch (error) {
         setAllTasks({
           ...allTasks,
           loading: false
         })
+        setRefreshing(false);
       }
     }
 
     getAllMainTask()
 
-  }, [])
+  }, [refreshing])
 
 
   const handleSearch = () => {
     console.log('searching for:', height);
   }
 
+  const renderItem = ({ item }: { item: TaskItemQueryType }) => (
+    <TaskItem
+      key={item.id}
+      cardContent={item.title}
+      primaryColor={item.primary_color}
+      taskItemId={item.id}
+      isUseSetDoneLocal={false}
+      setDoneOutFunc={onTaskDone}
+      isDoneProps={item.completed === 1}
+    />
+  );
+
 
 
   return (
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto", padding: 20, marginTop: 0 }}>
 
-    <View style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto" }}>
-      <View style={{ width: 64, height: 64, position: "fixed", top: height - (64 + 200), right: -(width / 2 - (50)), zIndex: 5, borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <AddButton />
-      </View>
-
-      <ScrollView style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-
-        <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative" }}>
+        <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative", marginTop: 144 }}>
           <TextInput
             style={styles.input}
             placeholder="Search"
@@ -121,12 +156,20 @@ const AllHabits = () => {
           </Pressable>
         </View>
 
-        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} />
+        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} buttonEvent={() => console.log("linh")} isShowButton={true} />
         <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 110, }}>
           {
-            allTasks.habit.length > 0 && !allTasks.loading && allTasks.habit.map((item) =>
-              <TaskItem key={item.id} cardContent={item.title} primaryColor={item.primary_color} taskItemId={item.id} isUseSetDoneLocal={true} isDoneProps={item.completed === 1 ? true : false} />
-            )
+            <Animated.FlatList
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              data={allTasks.habit}
+              renderItem={renderItem}
+              itemLayoutAnimation={LinearTransition}
+              contentContainerStyle={{ gap: 14 }}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            />
           }
           {
             (allTasks.habit.length === 0 && !allTasks.loading) && (
@@ -146,9 +189,8 @@ const AllHabits = () => {
           }
         </View>
 
-      </ScrollView >
-
-    </View >
+      </SafeAreaView >
+    </SafeAreaProvider>
   )
 
 
@@ -156,13 +198,6 @@ const AllHabits = () => {
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: '#1A182C',
-    width: "100%",
-    padding: 20,
-    marginTop: -64,
-  },
   input: {
     height: "100%",
     paddingHorizontal: 64,

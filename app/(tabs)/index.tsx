@@ -175,7 +175,7 @@ const Index = () => {
       const newTask = { ...task, completePercent: completeItem, remainTimePercent: re }
       modifiyTask.push(newTask)
 
-      if (taskRandom.length < 2 && completeItem < 100 && completeItem > 0) {
+      if (taskRandom.length < 2 && completeItem < 100) {
         taskRandom.push(newTask)
       }
     }

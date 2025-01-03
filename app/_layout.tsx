@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import SystemNavigationBar from 'react-native-system-navigation-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { migrateDbIfNeeded } from "@/utils/initDb";
 import { SheetProvider } from 'react-native-actions-sheet';
 import { SQLiteProvider } from 'expo-sqlite';
@@ -14,6 +15,7 @@ export default function RootLayout() {
 
 
   return (
+    <GestureHandlerRootView>
       <SQLiteProvider databaseName="todo.db" onInit={migrateDbIfNeeded}>
         <SheetProvider>
           <Stack>
@@ -21,6 +23,7 @@ export default function RootLayout() {
           </Stack>
         </SheetProvider>
       </SQLiteProvider>
+    </GestureHandlerRootView>
   )
 }
 

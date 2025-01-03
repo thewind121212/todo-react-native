@@ -53,6 +53,7 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
             setIsDone(!isDone)
         }
         else {
+            setIsDone(!isDone)
             setDoneOutFunc(taskItemId)
         }
     }
