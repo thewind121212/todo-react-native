@@ -12,7 +12,12 @@ registerSheet('color-picker-sheet', ColorPickerSheet);
 // across the app for all registered sheets.
 declare module 'react-native-actions-sheet' {
   interface Sheets {
-    'create-main-task': SheetDefinition;
+    'create-main-task': SheetDefinition<{
+      payload: {
+        type: "habit" | "task"
+        refesher: () => void,
+      }
+    }>;
     'calendarSheet': SheetDefinition;
     'color-picker-sheet': SheetDefinition;
   }

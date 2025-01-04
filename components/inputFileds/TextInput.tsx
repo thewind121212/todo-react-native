@@ -6,22 +6,22 @@ interface Props {
     mainTaskName: string
     setMainTaskName: (value: string) => void
     placeHolder?: string
+    isSheetDirty: boolean
 }
 
-const TextInput: React.FC<Props> = ({ mainTaskName, setMainTaskName, placeHolder = "Place Holder Not Found" }) => {
+const TextInput: React.FC<Props> = ({ mainTaskName, setMainTaskName, placeHolder = "Place Holder Not Found", isSheetDirty }) => {
     const [foucs, setFocus] = React.useState(false)
-
 
     return (
         <RNTextInput
-            style={[styles.input, { borderBottomColor: foucs || mainTaskName.length > 0 ? "#BBBBD4" : "white" }]}
-            placeholder={placeHolder}
+            style={[styles.input, { borderBottomColor: (isSheetDirty && mainTaskName.length === 0) ? "#F67280" : (foucs || mainTaskName.length > 0) ? "#7068FF" : "#BBBBD4" }]}
+            placeholder={isSheetDirty && mainTaskName.length === 0 ? "Main task require" : placeHolder}
             keyboardType="default"
             value={mainTaskName}
             onChangeText={setMainTaskName}
             onFocus={() => setFocus(true)}
             onBlur={() => setFocus(false)}
-            placeholderTextColor={'#BBBBD4'}
+            placeholderTextColor={isSheetDirty && mainTaskName.length === 0 ? "#F67280" : '#BBBBD4'}
         />
     )
 }
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 18,
         borderBottomColor: "#BBBBD4",
-        borderBottomWidth: 1,
+        borderBottomWidth: 2,
         marginTop: 8,
         fontWeight: "500"
     }
