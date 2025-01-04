@@ -9,6 +9,14 @@ import BlockHeader from '@/components/BlockHeader'
 import GroupCard from '@/components/GroupCard';
 import { MainTaskType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton'
+import { HoldItem } from 'react-native-hold-menu';
+
+const MenuItems = [
+  { text: 'Actions', icon: 'home', isTitle: true, onPress: () => { }, styles: { backgroundColor: "#222239" } },
+  { text: 'Action 1', icon: 'edit', onPress: () => { } },
+  { text: 'Action 2', icon: 'map-pin', onPress: () => { } },
+  { text: 'Action 3', icon: 'trash', onPress: () => { } },
+];
 
 
 
@@ -31,7 +39,7 @@ const AllTasks = () => {
 
 
 
-  const { width, height } = Dimensions.get('window');
+  const { height } = Dimensions.get('window');
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -50,16 +58,8 @@ const AllTasks = () => {
 
   useEffect(() => {
 
-
-    //simulate sleep
-
-    const sleep = (ms: number) => {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     async function getAllMainTask() {
 
-      await sleep(300)
       try {
         const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
         if (result) {
@@ -73,20 +73,21 @@ const AllTasks = () => {
           })
         }
 
+        setRefreshing(false)
       } catch (error) {
         setAllTasks({
           ...allTasks,
           isLoading: false
         })
-
+        setRefreshing(false)
       }
     }
 
-
-
     getAllMainTask()
 
-  }, [])
+  }, [refreshing])
+
+  console.log("component render");
 
   return (
 
@@ -124,7 +125,7 @@ const AllTasks = () => {
 
 
         <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} isShowButton={true}
-          buttonEvent={() => SheetManager.show('create-main-task')}
+          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "habit", refesher: () => setRefreshing(true) } })}
         />
 
 
@@ -158,14 +159,18 @@ const AllTasks = () => {
 
 
         <View style={{ marginTop: 40 }}></View>
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.task.length} isShowButton={true} />
+        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.task.length} isShowButton={true}
+          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "task", refesher: () => setRefreshing(true) } })}
+        />
         <View
           style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
         >
           {
             allTasks.task.length > 0 && allTasks.task.map((mainTaskItem) => {
               return (
-                <GroupCard key={mainTaskItem.id} mainTaskName={mainTaskItem.title} color={mainTaskItem.color} isHabit={false} />
+                <HoldItem key={mainTaskItem.id} items={MenuItems} menuAnchorPosition='top-left' >
+                  <GroupCard mainTaskName={mainTaskItem.title} color={mainTaskItem.color} isHabit={false} />
+                </HoldItem>
               )
             })
           }

@@ -39,7 +39,12 @@ function CreateDueDay() {
                         textDisabledColor: '#94a3b8'
                     }}
                     onDayPress={(dayData: any) => {
+                        const dayDataTime = new Date(dayData.dateString).getTime();
+                        const today = new Date().getTime();
                         if (dayData.dateString === dayPick) {
+                            return
+                        }
+                        if (dayDataTime < today) {
                             return
                         }
                         setLocalComponentState(dayData.dateString);

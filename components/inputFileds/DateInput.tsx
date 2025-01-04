@@ -9,7 +9,11 @@ import { useCalendarStore } from '@/store/calender';
 const FORMAT_OPTIONS = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' } as const;
 
 
-const DateInput = () => {
+interface propsType {
+    isSheetDirty: boolean
+}
+
+const DateInput = ({ isSheetDirty }: propsType) => {
     const { dayPick, setDayPick } = useCalendarStore();
 
     return (
@@ -18,12 +22,12 @@ const DateInput = () => {
         >
             <View
                 style={{
-                    width: "100%", height: "100%", borderColor: dayPick.length > 0 ? "#7068FF" : "#BBBBD4", borderWidth: 1,
+                    width: "100%", height: "100%", borderColor: (isSheetDirty && dayPick.length === 0) ? "#F67280" : dayPick.length > 0 ? "#7068FF" : "#BBBBD4", borderWidth: 1,
                     borderRadius: 14,
                     paddingLeft: 16, display: "flex", justifyContent: "center", alignItems: "flex-start"
                 }}
             >
-                <Text style={{ color: dayPick === "" ? "#BBBBD4" : "white", fontSize: 18, fontWeight: 500 }} >{dayPick === "" ? "Select Due Day" : new Date(dayPick).toLocaleDateString('vi-VN', FORMAT_OPTIONS)} </Text>
+                <Text style={{ color: dayPick === "" ? "#BBBBD4" : "white", fontSize: 18, fontWeight: 500 }} >{(isSheetDirty && dayPick.length === 0) ? "Please choose date" : dayPick === "" ? "Select Due Day" : new Date(dayPick).toLocaleDateString('vi-VN', FORMAT_OPTIONS)} </Text>
             </View>
             <View style={{ height: "100%", aspectRatio: "1/1", position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <Pressable
