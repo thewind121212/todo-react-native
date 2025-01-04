@@ -3,7 +3,7 @@ import { View, StyleSheet, TextInput, Dimensions, Pressable, Text, RefreshContro
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState, useTransition } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import TaskItem from '@/components/TaskItem'
 import { useSQLiteContext } from 'expo-sqlite';
@@ -11,7 +11,6 @@ import { TaskItemQueryType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { asCalendarConsumer } from 'react-native-calendars';
 
 
 const AllHabits = () => {
@@ -25,9 +24,9 @@ const AllHabits = () => {
     loading: true
   })
   const [query, setQuery] = useState<string>('');
+  const [isQuery, startTransition] = useTransition();
   const db = useSQLiteContext();
 
-  const { height } = Dimensions.get('window');
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -112,9 +111,21 @@ const AllHabits = () => {
   }, [refreshing])
 
 
-  const handleSearch = () => {
-    console.log('searching for:', height);
+
+  const handleSearch = (e: string) => {
+    setQuery(e);
   }
+
+  const taskRender = useMemo(() => {
+    if (query.length === 0) {
+      return allTasks.habit;
+    }
+    return allTasks.habit.filter((task) => task.title.toLowerCase().includes(query.toLowerCase()));
+
+  }, [query, allTasks.habit])
+
+
+
 
   const renderItem = ({ item }: { item: TaskItemQueryType }) => (
     <TaskItem
@@ -132,16 +143,16 @@ const AllHabits = () => {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto", padding: 20, marginTop: 0 }}>
+      <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', height: "auto", padding: 20, marginTop: 0 }}>
 
-        <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative", marginTop: 144 }}>
+        <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative" }}>
           <TextInput
             style={styles.input}
             placeholder="Search"
             value={query}
-            onChangeText={setQuery}
+            onChangeText={handleSearch}
             placeholderTextColor={'#4D4C71'}
-            onSubmitEditing={handleSearch}
+            onSubmitEditing={() => { }}
           />
           <View style={{ width: 64, height: 64, position: "absolute", left: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
             <Ionicons name="search" size={32} color="white" />
@@ -156,13 +167,13 @@ const AllHabits = () => {
           </Pressable>
         </View>
 
-        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} buttonEvent={() => console.log("linh")} isShowButton={true} />
+        <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={taskRender.length > 0 ? true : false} boxCount={taskRender.length} buttonEvent={() => console.log("linh")} isShowButton={true} />
         <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 110, }}>
           {
             <Animated.FlatList
               showsVerticalScrollIndicator={false}
               showsHorizontalScrollIndicator={false}
-              data={allTasks.habit}
+              data={taskRender}
               renderItem={renderItem}
               itemLayoutAnimation={LinearTransition}
               contentContainerStyle={{ gap: 14 }}
@@ -172,7 +183,7 @@ const AllHabits = () => {
             />
           }
           {
-            (allTasks.habit.length === 0 && !allTasks.loading) && (
+            (taskRender.length === 0 && !allTasks.loading) && (
               <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
                 <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
               </View>
@@ -203,7 +214,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 64,
     marginBottom: 10,
     borderRadius: 12,
-    color: '#4D4C71',
+    color: 'white',
     fontSize: 20,
   },
 })
