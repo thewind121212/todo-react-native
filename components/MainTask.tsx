@@ -16,7 +16,7 @@ const GRADIENT_COLOR_BY_PERCENT = {
 };
 
 
-const getGradientColor = (percent: number) => {
+export const getGradientColor = (percent: number) => {
     if (percent >= 100) {
         return GRADIENT_COLOR_BY_PERCENT[100];
     }

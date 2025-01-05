@@ -3,7 +3,7 @@ import { View, StyleSheet, TextInput, Dimensions, Pressable, Text, RefreshContro
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React, { useEffect, useMemo, useState, useTransition } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import TaskItem from '@/components/TaskItem'
 import { useSQLiteContext } from 'expo-sqlite';
@@ -24,7 +24,6 @@ const AllHabits = () => {
     loading: true
   })
   const [query, setQuery] = useState<string>('');
-  const [isQuery, startTransition] = useTransition();
   const db = useSQLiteContext();
 
 
@@ -116,6 +115,8 @@ const AllHabits = () => {
     setQuery(e);
   }
 
+
+
   const taskRender = useMemo(() => {
     if (query.length === 0) {
       return allTasks.habit;
@@ -152,7 +153,6 @@ const AllHabits = () => {
             value={query}
             onChangeText={handleSearch}
             placeholderTextColor={'#4D4C71'}
-            onSubmitEditing={() => { }}
           />
           <View style={{ width: 64, height: 64, position: "absolute", left: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
             <Ionicons name="search" size={32} color="white" />

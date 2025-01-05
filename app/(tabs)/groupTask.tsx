@@ -5,12 +5,14 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 import { SheetManager } from 'react-native-actions-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import GroupCard from '@/components/GroupCard';
 import { MainTaskType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton'
 import { HoldItem } from 'react-native-hold-menu';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 
 
@@ -31,13 +33,11 @@ const AllTasks = () => {
   const [shouldRefresh, setShouldRefresh] = useState(true);
   const [query, setQuery] = useState<string>('');
   const [allTasks, setAllTasks] = useState<{
-    habit: MainTaskType[],
-    task: MainTaskType[]
+    allMainTasks: MainTaskType[]
     isLoading: boolean
   }>({
     isLoading: true,
-    habit: [],
-    task: []
+    allMainTasks: []
   });
 
   const db = useSQLiteContext();
@@ -61,7 +61,6 @@ const AllTasks = () => {
 
 
 
-  const { height } = Dimensions.get('window');
 
   const onRefresh = () => {
     if (refreshing) return;
@@ -73,30 +72,32 @@ const AllTasks = () => {
   };
 
 
-
-
-  const handleSearch = () => {
-    console.log('searching for:', height);
-  }
-
-
   useEffect(() => {
     async function getAllMainTask() {
       try {
         const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks ORDER BY create_date DESC');
         if (result) {
-          const groupedTasks = result.reduce<{ habit: MainTaskType[], task: MainTaskType[] }>(
-            (acc, item) => {
-              if (item.type === 'habit') acc.habit.push(item);
-              else if (item.type === 'task') acc.task.push(item);
-              return acc;
-            },
-            { habit: [], task: [] }
-          );
+          const modifiyTask: MainTaskType[] = []
+          result.map((task) => {
+            if (task.type === 'task') {
+              const [year, month, day] = task.due_day ? task.due_day.split('-').map(Number) : [0, 0, 0];
+              const dueDayTimeStamp = new Date(year, month - 1, day).getTime()
+              const createDayTimeStamp = new Date(task.create_date).getTime()
+              const today = new Date().getTime()
+              const re = 100 - ((today - createDayTimeStamp) / (dueDayTimeStamp - createDayTimeStamp) * 100)
+              const newTask = { ...task, remainTimePercent: re }
+              modifiyTask.push(newTask)
+            }
+            else {
+              const newTask = { ...task, remainTimePercent: 0 }
+              modifiyTask.push(newTask)
+            }
+          })
+
 
           setAllTasks({
             ...allTasks,
-            ...groupedTasks,
+            allMainTasks: modifiyTask,
             isLoading: false
           });
         }
@@ -114,38 +115,41 @@ const AllTasks = () => {
 
 
   const onCreateMainTaskHander = (action: "habit" | "task", task: MainTaskType) => {
-    if (action === "habit") {
-      setAllTasks({
-        ...allTasks,
-        habit: [task, ...allTasks.habit]
-      })
-    } else {
-      setAllTasks({
-        ...allTasks,
-        task: [task, ...allTasks.habit]
-      })
-    }
+    setAllTasks({
+      ...allTasks,
+      allMainTasks: [task, ...allTasks.allMainTasks]
+    })
   }
+
+
+  const handleSearch = (e: string) => {
+    setQuery(e.trimEnd());
+  }
+
+
+  const taskRender = useMemo(() => {
+    if (query.length === 0) {
+      return allTasks.allMainTasks;
+    }
+    return allTasks.allMainTasks.filter((mainTaskItem) => mainTaskItem.title.toLowerCase().includes(query.toLowerCase()));
+
+  }, [query, allTasks.allMainTasks])
+
+
 
 
   return (
 
-    <View style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'center', alignItems: 'center', height: "auto" }}>
-      <ScrollView style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', height: "auto", padding: 20, marginTop: 0 }}>
 
         <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative" }}>
           <TextInput
             style={styles.input}
             placeholder="Search"
             value={query}
-            onChangeText={setQuery}
+            onChangeText={handleSearch}
             placeholderTextColor={'#4D4C71'}
-            onSubmitEditing={handleSearch}
           />
           <View style={{ width: 64, height: 64, position: "absolute", left: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
             <Ionicons name="search" size={32} color="white" />
@@ -163,7 +167,7 @@ const AllTasks = () => {
         </View>
 
 
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} isShowButton={true}
+        <BlockHeader isShowSubTitle={false} mainTitle="All Main Task" subTitle="see all" isShowBoxCount={taskRender.length > 0 ? true : false} boxCount={taskRender.length} isShowButton={true}
           buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "habit", onTaskCreate: onCreateMainTaskHander } })}
         />
 
@@ -171,23 +175,33 @@ const AllTasks = () => {
         <View
           style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
         >
-          {
-            allTasks.habit.length > 0 && allTasks.habit.map((mainTaskItem) => {
-              return (
 
-                <HoldItem key={mainTaskItem.id} items={MenuItems} menuAnchorPosition='top-left'
-                  actionParams={{
-                    Edit: ["editHabit", mainTaskItem],
-                    Delete: [mainTaskItem]
-                  }}
-                >
-                  <GroupCard key={mainTaskItem.id} mainTaskName={mainTaskItem.title} color={mainTaskItem.color} />
-                </HoldItem>
-              )
-            })
+          {
+            taskRender.length > 0 && <Animated.FlatList
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              data={taskRender}
+              renderItem={
+                ({ item }) => (
+                  <HoldItem key={item.id} items={MenuItems} menuAnchorPosition='top-left'
+                    actionParams={{
+                      Edit: ["editHabit", item],
+                      Delete: [item]
+                    }}
+                  >
+                    <GroupCard key={item.id} mainTaskItem={item} />
+                  </HoldItem>
+                )
+              }
+              itemLayoutAnimation={LinearTransition}
+              contentContainerStyle={{ gap: 14 }}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+            />
           }
           {
-            (allTasks.habit.length === 0 && !allTasks.isLoading) && (
+            (taskRender.length === 0 && !allTasks.isLoading) && (
               <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
                 <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
               </View>
@@ -204,51 +218,8 @@ const AllTasks = () => {
           }
         </View>
 
-
-        <View style={{ marginTop: 40 }}></View>
-        <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.task.length} isShowButton={true}
-          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "task", onTaskCreate: onCreateMainTaskHander } })}
-        />
-        <View
-          style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
-        >
-          {
-            allTasks.task.length > 0 && allTasks.task.map((mainTaskItem) => {
-              return (
-                <HoldItem key={mainTaskItem.id} items={MenuItems} menuAnchorPosition='top-left'
-                  actionParams={{
-                    Edit: ["editTask", mainTaskItem],
-                    Delete: [mainTaskItem]
-                  }}
-                >
-                  <GroupCard mainTaskName={mainTaskItem.title} color={mainTaskItem.color} isHabit={false} />
-                </HoldItem>
-              )
-            })
-          }
-          {
-            (allTasks.task.length === 0 && !allTasks.isLoading) && (
-              <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
-                <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
-              </View>
-            )
-          }
-          {
-            allTasks.isLoading && (
-              <>
-                {[...Array(5).keys()].map((_, index) => (
-                  <Skeleton key={index + "groupTaskSkeletonTasks"} colorMode={'dark'} width={'100%'} height={52} colors={["#222239", "#2c2c49"]} />
-                ))}
-              </>
-            )
-          }
-
-        </View>
-
-
-      </ScrollView >
-
-    </View >
+      </SafeAreaView >
+    </SafeAreaProvider>
   )
 
 

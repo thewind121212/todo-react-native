@@ -1,9 +1,10 @@
 import { View, Text, Image, Pressable } from "react-native";
-import ActionSheet, { FlatList, SheetManager, SheetProps } from "react-native-actions-sheet";
+import ActionSheet, { SheetManager, SheetProps } from "react-native-actions-sheet";
 import ColorPicker from "../inputFileds/ColorPicker";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import TextInput from "../inputFileds/TextInput";
 import DateInput from "../inputFileds/DateInput";
+import CreateOptions from "../inputFileds/CreateOptions";
 
 import colorData from "../../data/colors.json"
 import { useCreateMainTaskStore } from "@/store/createMainTask";
@@ -13,9 +14,7 @@ import { useSQLiteContext } from "expo-sqlite";
 
 function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
 
-  const { name, dayPick, color, resetState, setName, setDayPick, setColor } = useCreateMainTaskStore()
-
-
+  const { name, dayPick, color, resetState, setName, setDayPick, setColor, createType } = useCreateMainTaskStore()
 
 
   const [isSheetDirty, setIsSheetDirty] = useState<boolean>(false)
@@ -33,12 +32,10 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
 
   const createMainTaskHander = useCallback(async () => {
     setIsSheetDirty(true)
-    if (payload?.type === "task" && dayPick === "") return
+    if (createType === "task" && dayPick === "") return
     if (name === "" || color === "") return
 
     try {
-      let lastId = 0
-
       if (payload?.type === "editHabit" || payload?.type === "editTask") {
         await db.runAsync(
           `UPDATE main_tasks SET title = ?, color = ?, due_day = ?  WHERE id = ?`,
@@ -47,16 +44,17 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
       } else {
         const log = await db.runAsync(
           `INSERT INTO main_tasks (title, type, due_day, color) VALUES (?, ?, ?, ?)`,
-          name, payload?.type! === "habit" ? 'habit' : "task", dayPick ? dayPick : null, color
+          name, createType, dayPick ? dayPick : null, color
         );
-        payload?.onTaskCreate(payload.type, {
+        payload?.onTaskCreate(createType, {
           id: log.lastInsertRowId,
           title: name,
-          type: payload?.type! === "habit" ? 'habit' : "task",
+          type: createType === "habit" ? 'habit' : "task",
           create_date: new Date().toISOString(),
           update_date: new Date().toISOString(),
           due_day: dayPick ? dayPick : null,
-          color: color
+          color: color,
+          remainTimePercent: 0
         })
       }
 
@@ -87,10 +85,11 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
       onClose={handerOnShetClose}
     >
       <View style={{ width: "auto", height: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 40 }}>
-        <Text style={{ color: "white", fontSize: 24, textAlign: "center", fontWeight: 600 }}>{payload?.type === 'habit' ? "Create Main Habit" : "Create Main Task"}</Text>
+        <Text style={{ color: "white", fontSize: 24, textAlign: "center", fontWeight: 600 }}>Create Main Task</Text>
         <TextInput placeHolder="Main Task" isSheetDirty={isSheetDirty} />
+        <CreateOptions />
         {
-          (payload?.type === "task" || payload?.type === "editTask") && (
+          (createType === "task" || payload?.type === "editTask") && (
             <>
               <Text style={{ color: "#ACABB4", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>Date</Text>
               <DateInput isSheetDirty={isSheetDirty} />
