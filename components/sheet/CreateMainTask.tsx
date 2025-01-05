@@ -1,93 +1,96 @@
 import { View, Text, Image, Pressable } from "react-native";
 import ActionSheet, { FlatList, SheetManager, SheetProps } from "react-native-actions-sheet";
-import { useCalendarStore } from "@/store/calender";
 import ColorPicker from "../inputFileds/ColorPicker";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import TextInput from "../inputFileds/TextInput";
 import DateInput from "../inputFileds/DateInput";
 
 import colorData from "../../data/colors.json"
-import { useColorsStore } from "@/store/colors";
+import { useCreateMainTaskStore } from "@/store/createMainTask";
 import Button from "../Button";
 import { useSQLiteContext } from "expo-sqlite";
 
 
 function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
-  const [createMainTaskState, setCreateMainTaskState] = useState<{
-    title: string,
-    color: string,
-  }>({
-    title: '',
-    color: ''
-  })
+
+  const { name, dayPick, color, resetState, setName, setDayPick, setColor } = useCreateMainTaskStore()
+
+
+
 
   const [isSheetDirty, setIsSheetDirty] = useState<boolean>(false)
-  const { dayPick, setDayPick } = useCalendarStore();
   const db = useSQLiteContext()
-  const { colorPicked, setColoPick } = useColorsStore()
 
-  useEffect(() => {
-    if (colorPicked === "") return
-    setCreateMainTaskState({
-      ...createMainTaskState,
-      color: colorPicked,
-    })
-  }, [colorPicked, dayPick])
+  if (payload?.type === "editHabit" || payload?.type === "editTask") {
+    useEffect(() => {
+      setName(payload?.task?.title!)
+      setColor(payload?.task?.color!)
+      setDayPick(payload?.task?.due_day! ? payload.task.due_day! : "")
+    }, [])
+  }
 
-
-
-
-
-  const handerOnShetClose = useCallback(() => {
-    setCreateMainTaskState({
-      title: '',
-      color: ''
-    });
-    setDayPick('');
-    setColoPick('');
-  }, [])
-
-
-
-  const pinkInitColorHandler = useCallback((color: string) => {
-    setCreateMainTaskState({
-      ...createMainTaskState,
-      color: color
-    })
-
-    setColoPick("")
-  }, [createMainTaskState])
 
 
   const createMainTaskHander = useCallback(async () => {
     setIsSheetDirty(true)
     if (payload?.type === "task" && dayPick === "") return
-    if (createMainTaskState.title === "" || createMainTaskState.color === "") return
+    if (name === "" || color === "") return
 
     try {
-      await db.runAsync(
-        `INSERT INTO main_tasks (title, type, due_day, color) VALUES (?, ?, ?, ?)`,
-        createMainTaskState.title, payload?.type! === "habit" ? 'habit' : "task", dayPick ? dayPick : null, createMainTaskState.color
-      );
-      payload?.refesher()
+      let lastId = 0
+
+      if (payload?.type === "editHabit" || payload?.type === "editTask") {
+        await db.runAsync(
+          `UPDATE main_tasks SET title = ?, color = ?, due_day = ?  WHERE id = ?`,
+          name, color, dayPick ? dayPick : null, payload?.task?.id!,
+        );
+      } else {
+        const log = await db.runAsync(
+          `INSERT INTO main_tasks (title, type, due_day, color) VALUES (?, ?, ?, ?)`,
+          name, payload?.type! === "habit" ? 'habit' : "task", dayPick ? dayPick : null, color
+        );
+        payload?.onTaskCreate(payload.type, {
+          id: log.lastInsertRowId,
+          title: name,
+          type: payload?.type! === "habit" ? 'habit' : "task",
+          create_date: new Date().toISOString(),
+          update_date: new Date().toISOString(),
+          due_day: dayPick ? dayPick : null,
+          color: color
+        })
+      }
+
+
       SheetManager.hide('create-main-task')
     } catch (error) {
       console.log(error)
-      SheetManager.hide('create-main-task')
+      setTimeout(() => {
+        SheetManager.hide('create-main-task')
+      }, 200)
     }
 
-  }, [createMainTaskState, dayPick])
+  }, [name, dayPick, color])
+
+
+  const handerOnShetClose = useCallback(() => {
+    setIsSheetDirty(false)
+    resetState()
+  }, [])
+
+  const isIncludesInColorInit = useMemo(() => {
+    return colorData.INIT_COLOR_PICKER.includes(color)
+  }, [color])
+
 
   return (
     <ActionSheet containerStyle={{ backgroundColor: "#222239", height: "auto" }}
       onClose={handerOnShetClose}
-      closeOnTouchBackdrop={false}
     >
       <View style={{ width: "auto", height: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 40 }}>
         <Text style={{ color: "white", fontSize: 24, textAlign: "center", fontWeight: 600 }}>{payload?.type === 'habit' ? "Create Main Habit" : "Create Main Task"}</Text>
-        <TextInput mainTaskName={createMainTaskState.title} setMainTaskName={(value: string) => setCreateMainTaskState({ ...createMainTaskState, title: value })} placeHolder="Main Task" isSheetDirty={isSheetDirty} />
+        <TextInput placeHolder="Main Task" isSheetDirty={isSheetDirty} />
         {
-          payload?.type === "task" && (
+          (payload?.type === "task" || payload?.type === "editTask") && (
             <>
               <Text style={{ color: "#ACABB4", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>Date</Text>
               <DateInput isSheetDirty={isSheetDirty} />
@@ -98,47 +101,39 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
         >
           <Text style={{ color: "#ACABB4", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>Color</Text>
           {
-            isSheetDirty && createMainTaskState.color === "" && (
+            isSheetDirty && color === "" && (
               <Text style={{ color: "#F67280", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>{`(color is require)`}</Text>
             )
           }
 
         </View>
-        <View style={{ width: '100%' }}>
-          <FlatList
-            style={{ width: '100%', display: 'flex' }}
-            contentContainerStyle={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: 4 }}
-            data={colorData.INIT_COLOR_PICKER}
-            keyExtractor={(item) => item}
-            renderItem={({ item, index }) => {
+        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: 4 }}>
+
+          {
+            colorData.INIT_COLOR_PICKER.map((item, index) => {
               return (
-                <View style={{ display: 'flex', flexDirection: 'row', gap: 4 }}>
-                  <ColorPicker colorValue={item} setColorValue={(value: string) => pinkInitColorHandler(value)} selectedColor={createMainTaskState.color} />
-                  {
-                    index === colorData.INIT_COLOR_PICKER.length - 1 && colorPicked === "" && (
-                      <Pressable style={{ width: 48, height: 48, borderRadius: "50%", display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                        onPressIn={() => SheetManager.show('color-picker-sheet')}
-                      >
-                        <Image source={require('../../assets/colorful.png')} style={{ width: 36, height: 36 }} />
-                      </Pressable>
-                    )
-                  }
-                  {
-                    index === colorData.INIT_COLOR_PICKER.length - 1 && colorPicked !== "" && (
-
-                      <ColorPicker colorValue={colorPicked} setColorValue={() => SheetManager.show('color-picker-sheet')} selectedColor={colorPicked} />
-                    )
-                  }
-                </View>
+                <ColorPicker colorValue={item} key={index} />
               )
-            }}
+            })
 
-          ></FlatList>
+          }
+          {
+            (isIncludesInColorInit || color === "") ? (
+              <Pressable style={{ width: 48, height: 48, borderRadius: "50%", display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                onPressIn={() => SheetManager.show('color-picker-sheet')}
+              >
+                <Image source={require('../../assets/colorful.png')} style={{ width: 36, height: 36 }} />
+              </Pressable>
+            ) : (
 
-          <View style={{ width: "100%", height: "auto", display: "flex", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", paddingHorizontal: 10, gap: 24, marginTop: 30 }} >
-            <Button tittle="Cancel" onPressHandler={() => SheetManager.hide('create-main-task')} isPrimary={false} />
-            <Button tittle="Set Day" onPressHandler={createMainTaskHander} />
-          </View>
+              <ColorPicker colorValue={color} isChoose={true} />
+            )
+          }
+        </View>
+
+        <View style={{ width: "100%", height: "auto", display: "flex", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", paddingHorizontal: 10, gap: 24, marginTop: 30 }} >
+          <Button tittle="Cancel" onPressHandler={() => SheetManager.hide('create-main-task')} isPrimary={false} />
+          <Button tittle="Set Day" onPressHandler={createMainTaskHander} />
         </View>
       </View>
     </ActionSheet>

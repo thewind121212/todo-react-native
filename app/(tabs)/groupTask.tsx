@@ -1,7 +1,8 @@
 
 import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSQLiteContext } from 'expo-sqlite';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 import { SheetManager } from 'react-native-actions-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useEffect, useState } from 'react'
@@ -11,19 +12,23 @@ import { MainTaskType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton'
 import { HoldItem } from 'react-native-hold-menu';
 
-const MenuItems = [
-  { text: 'Actions', icon: 'home', isTitle: true, onPress: () => { }, styles: { backgroundColor: "#222239" } },
-  { text: 'Action 1', icon: 'edit', onPress: () => { } },
-  { text: 'Action 2', icon: 'map-pin', onPress: () => { } },
-  { text: 'Action 3', icon: 'trash', onPress: () => { } },
-];
 
 
+const deleteMainTaskHander = async (db: SQLiteDatabase, id: string) => {
+  try {
+    const result = await db.runAsync(`DELETE FROM main_tasks WHERE id = (?)`, id)
+    console.log(result)
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 
 const AllTasks = () => {
 
+
   const [refreshing, setRefreshing] = useState(false);
+  const [shouldRefresh, setShouldRefresh] = useState(true);
   const [query, setQuery] = useState<string>('');
   const [allTasks, setAllTasks] = useState<{
     habit: MainTaskType[],
@@ -36,19 +41,38 @@ const AllTasks = () => {
   });
 
   const db = useSQLiteContext();
+  const timeOutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+
+  const MenuItems = [
+    {
+      text: 'Edit', icon: () => <FontAwesome name="edit" size={22} color="white" />, onPress: (action: "editHabit" | "editTask", task: MainTaskType) => {
+
+        SheetManager.show('create-main-task', { payload: { type: action, onTaskCreate: () => setRefreshing(true), task: task } })
+      }
+    },
+    {
+      text: 'Delete', icon: () => <FontAwesome6 name="delete-left" size={22} color="white" />, onPress: (task: MainTaskType) => {
+        deleteMainTaskHander(db, task.id.toString())
+        setRefreshing(true)
+      }, isDestructive: true
+    },
+  ];
 
 
 
   const { height } = Dimensions.get('window');
 
   const onRefresh = () => {
+    if (refreshing) return;
+    setShouldRefresh(!shouldRefresh);
     setRefreshing(true);
-
-    // Simulate a network request or data refresh
-    setTimeout(() => {
+    timeOutRef.current = setTimeout(() => {
       setRefreshing(false);
-    }, 2000); // 2 seconds delay
+    }, 1000)
   };
+
+
 
 
   const handleSearch = () => {
@@ -57,37 +81,52 @@ const AllTasks = () => {
 
 
   useEffect(() => {
-
     async function getAllMainTask() {
-
       try {
-        const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks');
+        const result = await db.getAllAsync<MainTaskType>('SELECT * FROM main_tasks ORDER BY create_date DESC');
         if (result) {
-          const habit = result.filter((item) => item.type === 'habit');
-          const task = result.filter((item) => item.type === 'task');
+          const groupedTasks = result.reduce<{ habit: MainTaskType[], task: MainTaskType[] }>(
+            (acc, item) => {
+              if (item.type === 'habit') acc.habit.push(item);
+              else if (item.type === 'task') acc.task.push(item);
+              return acc;
+            },
+            { habit: [], task: [] }
+          );
+
           setAllTasks({
             ...allTasks,
-            habit,
-            task,
+            ...groupedTasks,
             isLoading: false
-          })
+          });
         }
-
-        setRefreshing(false)
       } catch (error) {
         setAllTasks({
           ...allTasks,
           isLoading: false
         })
-        setRefreshing(false)
       }
     }
 
     getAllMainTask()
 
-  }, [refreshing])
+  }, [shouldRefresh])
 
-  console.log("component render");
+
+  const onCreateMainTaskHander = (action: "habit" | "task", task: MainTaskType) => {
+    if (action === "habit") {
+      setAllTasks({
+        ...allTasks,
+        habit: [task, ...allTasks.habit]
+      })
+    } else {
+      setAllTasks({
+        ...allTasks,
+        task: [task, ...allTasks.habit]
+      })
+    }
+  }
+
 
   return (
 
@@ -125,7 +164,7 @@ const AllTasks = () => {
 
 
         <BlockHeader isShowSubTitle={false} mainTitle="Group Habit" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.habit.length} isShowButton={true}
-          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "habit", refesher: () => setRefreshing(true) } })}
+          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "habit", onTaskCreate: onCreateMainTaskHander } })}
         />
 
 
@@ -135,7 +174,15 @@ const AllTasks = () => {
           {
             allTasks.habit.length > 0 && allTasks.habit.map((mainTaskItem) => {
               return (
-                <GroupCard key={mainTaskItem.id} mainTaskName={mainTaskItem.title} color={mainTaskItem.color} />
+
+                <HoldItem key={mainTaskItem.id} items={MenuItems} menuAnchorPosition='top-left'
+                  actionParams={{
+                    Edit: ["editHabit", mainTaskItem],
+                    Delete: [mainTaskItem]
+                  }}
+                >
+                  <GroupCard key={mainTaskItem.id} mainTaskName={mainTaskItem.title} color={mainTaskItem.color} />
+                </HoldItem>
               )
             })
           }
@@ -160,7 +207,7 @@ const AllTasks = () => {
 
         <View style={{ marginTop: 40 }}></View>
         <BlockHeader isShowSubTitle={false} mainTitle="Group Task" subTitle="see all" isShowBoxCount={allTasks.habit.length > 0 ? true : false} boxCount={allTasks.task.length} isShowButton={true}
-          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "task", refesher: () => setRefreshing(true) } })}
+          buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "task", onTaskCreate: onCreateMainTaskHander } })}
         />
         <View
           style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
@@ -168,7 +215,12 @@ const AllTasks = () => {
           {
             allTasks.task.length > 0 && allTasks.task.map((mainTaskItem) => {
               return (
-                <HoldItem key={mainTaskItem.id} items={MenuItems} menuAnchorPosition='top-left' >
+                <HoldItem key={mainTaskItem.id} items={MenuItems} menuAnchorPosition='top-left'
+                  actionParams={{
+                    Edit: ["editTask", mainTaskItem],
+                    Delete: [mainTaskItem]
+                  }}
+                >
                   <GroupCard mainTaskName={mainTaskItem.title} color={mainTaskItem.color} isHabit={false} />
                 </HoldItem>
               )

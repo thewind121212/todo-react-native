@@ -2,6 +2,7 @@ import { registerSheet, SheetDefinition } from 'react-native-actions-sheet';
 import CreateMainTask from '@/components/sheet/CreateMainTask';
 import CreateDueDay from '@/components/sheet/CalendarSheet';
 import ColorPickerSheet from '@/components/sheet/ColorPickerSheet';
+import { MainTaskType } from '@/types/appTypes';
 
 registerSheet('create-main-task', CreateMainTask);
 registerSheet('calendarSheet', CreateDueDay);
@@ -14,8 +15,9 @@ declare module 'react-native-actions-sheet' {
   interface Sheets {
     'create-main-task': SheetDefinition<{
       payload: {
-        type: "habit" | "task"
-        refesher: () => void,
+        type: "habit" | "task" | "editHabit" | "editTask",
+        task?: MainTaskType,
+        onTaskCreate: (action: "habit" | "task", task: MainTaskType) => void,
       }
     }>;
     'calendarSheet': SheetDefinition;

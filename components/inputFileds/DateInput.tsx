@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View, Text } from 'react-native'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import React from 'react'
 import { SheetManager } from 'react-native-actions-sheet';
-import { useCalendarStore } from '@/store/calender';
+import { useCreateMainTaskStore } from '@/store/createMainTask';
 
 
 
@@ -14,7 +14,7 @@ interface propsType {
 }
 
 const DateInput = ({ isSheetDirty }: propsType) => {
-    const { dayPick, setDayPick } = useCalendarStore();
+    const { dayPick, setDayPick } = useCreateMainTaskStore()
 
     return (
         <Pressable style={{ ...styles.container }}
