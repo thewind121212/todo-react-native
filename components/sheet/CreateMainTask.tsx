@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable } from "react-native";
+import { View, Text, Image, Pressable, Keyboard } from "react-native";
 import ActionSheet, { SheetManager, SheetProps } from "react-native-actions-sheet";
 import ColorPicker from "../inputFileds/ColorPicker";
 import { useState, useCallback, useMemo, useEffect } from "react";
@@ -10,11 +10,13 @@ import colorData from "../../data/colors.json"
 import { useCreateMainTaskStore } from "@/store/createMainTask";
 import Button from "../Button";
 import { useSQLiteContext } from "expo-sqlite";
+import { calcRemainTimePercent, getCurrentDateTime } from "@/utils/helper";
+import { MainTaskType } from "@/types/appTypes";
 
 
 function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
 
-  const { name, dayPick, color, resetState, setName, setDayPick, setColor, createType } = useCreateMainTaskStore()
+  const { name, dayPick, color, resetState, setName, setDayPick, setColor, createType, setCreateType } = useCreateMainTaskStore()
 
 
   const [isSheetDirty, setIsSheetDirty] = useState<boolean>(false)
@@ -22,6 +24,7 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
 
   if (payload?.type === "editHabit" || payload?.type === "editTask") {
     useEffect(() => {
+      setCreateType(payload?.task?.type!)
       setName(payload?.task?.title!)
       setColor(payload?.task?.color!)
       setDayPick(payload?.task?.due_day! ? payload.task.due_day! : "")
@@ -37,10 +40,23 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
 
     try {
       if (payload?.type === "editHabit" || payload?.type === "editTask") {
-        await db.runAsync(
-          `UPDATE main_tasks SET title = ?, color = ?, due_day = ?  WHERE id = ?`,
-          name, color, dayPick ? dayPick : null, payload?.task?.id!,
-        );
+        if (payload?.onUpdateTask && payload.task) {
+          await db.runAsync(
+            `UPDATE main_tasks SET title = ?, color = ?, due_day = ?  WHERE id = ?`,
+            name, color, dayPick ? dayPick : null, payload.task.id,
+          );
+          const newTask: MainTaskType = {
+            id: payload.task.id,
+            title: name,
+            type: createType === "habit" ? 'habit' : "task",
+            create_date: payload.task.create_date,
+            update_date: payload.task.update_date,
+            due_day: dayPick ? dayPick : null,
+            color: color,
+            remainTimePercent: dayPick ? calcRemainTimePercent(dayPick, payload.task.create_date) : 0
+          }
+          payload.onUpdateTask(payload.task?.id!, newTask)
+        }
       } else {
         const log = await db.runAsync(
           `INSERT INTO main_tasks (title, type, due_day, color) VALUES (?, ?, ?, ?)`,
@@ -50,11 +66,11 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
           id: log.lastInsertRowId,
           title: name,
           type: createType === "habit" ? 'habit' : "task",
-          create_date: new Date().toISOString(),
-          update_date: new Date().toISOString(),
+          create_date: getCurrentDateTime(),
+          update_date: getCurrentDateTime(),
           due_day: dayPick ? dayPick : null,
           color: color,
-          remainTimePercent: 0
+          remainTimePercent: dayPick ? calcRemainTimePercent(dayPick, getCurrentDateTime()) : 0
         })
       }
 
@@ -80,14 +96,18 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
   }, [color])
 
 
+  const isEdit = payload?.type === "editHabit" || payload?.type === "editTask"
+
   return (
     <ActionSheet containerStyle={{ backgroundColor: "#222239", height: "auto" }}
-      onClose={handerOnShetClose}
+      onBeforeClose={handerOnShetClose}
     >
       <View style={{ width: "auto", height: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 40 }}>
-        <Text style={{ color: "white", fontSize: 24, textAlign: "center", fontWeight: 600 }}>Create Main Task</Text>
+        <Text style={{ color: "white", fontSize: 24, textAlign: "center", fontWeight: 600 }}>{isEdit ? "Edit" : "Create"} Main Task</Text>
         <TextInput placeHolder="Main Task" isSheetDirty={isSheetDirty} />
-        <CreateOptions />
+        {
+          !isEdit && (<CreateOptions />)
+        }
         {
           (createType === "task" || payload?.type === "editTask") && (
             <>
@@ -119,7 +139,10 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
           {
             (isIncludesInColorInit || color === "") ? (
               <Pressable style={{ width: 48, height: 48, borderRadius: "50%", display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                onPressIn={() => SheetManager.show('color-picker-sheet')}
+                onPressIn={() => {
+                  Keyboard.dismiss()
+                  SheetManager.show('color-picker-sheet')
+                }}
               >
                 <Image source={require('../../assets/colorful.png')} style={{ width: 36, height: 36 }} />
               </Pressable>

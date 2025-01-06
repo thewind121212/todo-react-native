@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React from 'react'
 import { useCreateMainTaskStore } from '@/store/createMainTask';
@@ -21,6 +21,7 @@ const CreateOptions = () => {
 
 
     const onPressIn = (type: "habit" | "task") => {
+        Keyboard.dismiss()
         if (type === createType) return
         setCreateType(type)
         shinkShareValue.value = withSpring(0.8, { damping: 10, stiffness: 100 })

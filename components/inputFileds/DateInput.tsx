@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View, Text } from 'react-native'
+import { Pressable, StyleSheet, View, Text, Keyboard } from 'react-native'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import React from 'react'
 import { SheetManager } from 'react-native-actions-sheet';
@@ -18,7 +18,10 @@ const DateInput = ({ isSheetDirty }: propsType) => {
 
     return (
         <Pressable style={{ ...styles.container }}
-            onPressIn={() => SheetManager.show('calendarSheet')}
+            onPressIn={() => {
+                Keyboard.dismiss()
+                SheetManager.show('calendarSheet')
+            }}
         >
             <View
                 style={{

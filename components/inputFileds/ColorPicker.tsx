@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Keyboard, Pressable, StyleSheet, View } from 'react-native'
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import React from 'react'
 import { useCreateMainTaskStore } from '@/store/createMainTask';
@@ -15,6 +15,7 @@ const ColorPicker = ({ colorValue, isChoose = false }: Props) => {
     const { color, setColor } = useCreateMainTaskStore()
 
     const onPressInHandler = () => {
+        Keyboard.dismiss()
         if (isChoose) {
             SheetManager.show('color-picker-sheet')
             return

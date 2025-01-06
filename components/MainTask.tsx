@@ -80,7 +80,7 @@ const MainTask = ({ mainTaskName, overAllPercent, remainTimePercent, primaryColo
             </View>
             {
                 isRenderProgress && (
-                    <View style={{ width: (width - 40) * (remainTimePercent / 100), height: 4, position: "absolute", left: 0, bottom: 0, borderRadius: 0, overflow: 'hidden' }}>
+                    <View style={{ width: (width - 40) * (remainTimePercent / 100), height: 4, position: "absolute", left: 0, bottom: 0, borderRadius: 2, overflow: 'hidden' }}>
                         <View style={{ width: '100%', height: 4, position: "relative", overflow: 'hidden' }}>
                             <LinearGradient
                                 colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}

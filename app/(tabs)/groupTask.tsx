@@ -1,29 +1,19 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
+import { View, StyleSheet, RefreshControl, TextInput, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
 import { SheetManager } from 'react-native-actions-sheet';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useTransition } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 import GroupCard from '@/components/GroupCard';
 import { MainTaskType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton'
-import { HoldItem } from 'react-native-hold-menu';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { LinearTransition } from 'react-native-reanimated';
+import { calcRemainTimePercent } from '@/utils/helper';
 
 
-
-const deleteMainTaskHander = async (db: SQLiteDatabase, id: string) => {
-  try {
-    const result = await db.runAsync(`DELETE FROM main_tasks WHERE id = (?)`, id)
-    console.log(result)
-  } catch (error) {
-    console.log(error)
-  }
-}
 
 
 const AllTasks = () => {
@@ -31,6 +21,7 @@ const AllTasks = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [shouldRefresh, setShouldRefresh] = useState(true);
+  const [pending, startTransiton] = useTransition()
   const [query, setQuery] = useState<string>('');
   const [allTasks, setAllTasks] = useState<{
     allMainTasks: MainTaskType[]
@@ -44,21 +35,42 @@ const AllTasks = () => {
   const timeOutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
-  const MenuItems = [
-    {
-      text: 'Edit', icon: () => <FontAwesome name="edit" size={22} color="white" />, onPress: (action: "editHabit" | "editTask", task: MainTaskType) => {
 
-        SheetManager.show('create-main-task', { payload: { type: action, onTaskCreate: () => setRefreshing(true), task: task } })
+  const deleteMainTaskHander = async (id: string) => {
+    try {
+      setAllTasks({
+        ...allTasks,
+        allMainTasks: allTasks.allMainTasks.filter((task) => task.id.toString() !== id)
+      })
+
+      startTransiton(() => {
+        db.runSync(`DELETE FROM main_tasks WHERE id = (?)`, id)
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const onEditHander = async (task: MainTaskType) => {
+    SheetManager.show('create-main-task', {
+      payload: {
+        type: task.type === 'habit' ? "editHabit" : "editTask",
+        task: task,
+        onTaskCreate: () => { },
+        onUpdateTask: (id: number, editedTask: MainTaskType | undefined) => {
+          if (!editedTask) return
+          const index = allTasks.allMainTasks.findIndex(task => task.id === id)
+          startTransiton(() => {
+            allTasks.allMainTasks[index] = editedTask
+            setAllTasks({
+              ...allTasks,
+              allMainTasks: [...allTasks.allMainTasks]
+            })
+          })
+        }
       }
-    },
-    {
-      text: 'Delete', icon: () => <FontAwesome6 name="delete-left" size={22} color="white" />, onPress: (task: MainTaskType) => {
-        deleteMainTaskHander(db, task.id.toString())
-        setRefreshing(true)
-      }, isDestructive: true
-    },
-  ];
-
+    })
+  }
 
 
 
@@ -80,11 +92,7 @@ const AllTasks = () => {
           const modifiyTask: MainTaskType[] = []
           result.map((task) => {
             if (task.type === 'task') {
-              const [year, month, day] = task.due_day ? task.due_day.split('-').map(Number) : [0, 0, 0];
-              const dueDayTimeStamp = new Date(year, month - 1, day).getTime()
-              const createDayTimeStamp = new Date(task.create_date).getTime()
-              const today = new Date().getTime()
-              const re = 100 - ((today - createDayTimeStamp) / (dueDayTimeStamp - createDayTimeStamp) * 100)
+              const re = calcRemainTimePercent(task.due_day!, task.create_date)
               const newTask = { ...task, remainTimePercent: re }
               modifiyTask.push(newTask)
             }
@@ -141,7 +149,7 @@ const AllTasks = () => {
   return (
 
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', height: "auto", padding: 20, marginTop: 0 }}>
+      <SafeAreaView style={{ flex: 1, width: "100%", backgroundColor: '#1A182C', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', padding: 20, marginTop: 0 }}>
 
         <View style={{ width: "100%", height: 64, backgroundColor: "#222239", borderRadius: 12, marginBottom: 24, position: "relative" }}>
           <TextInput
@@ -173,7 +181,7 @@ const AllTasks = () => {
 
 
         <View
-          style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}
+          style={{ flexDirection: 'column', width: '100%', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 150 }}
         >
 
           {
@@ -183,14 +191,7 @@ const AllTasks = () => {
               data={taskRender}
               renderItem={
                 ({ item }) => (
-                  <HoldItem key={item.id} items={MenuItems} menuAnchorPosition='top-left'
-                    actionParams={{
-                      Edit: ["editHabit", item],
-                      Delete: [item]
-                    }}
-                  >
-                    <GroupCard key={item.id} mainTaskItem={item} />
-                  </HoldItem>
+                  <GroupCard key={item.id} mainTaskItem={item} deleteMainTaskHander={deleteMainTaskHander} editMainTaskHander={onEditHander} />
                 )
               }
               itemLayoutAnimation={LinearTransition}

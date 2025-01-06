@@ -41,8 +41,8 @@ CREATE TABLE main_tasks (
   title TEXT NOT NULL,
   color TEXT NOT NULL,
   type TEXT CHECK (type IN ('habit', 'task')) NOT NULL,
-  create_date DATETIME DEFAULT CURRENT_TIMESTAMP, 
-  update_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  create_date DATETIME DEFAULT (DATETIME('now', 'localtime')),
+  update_date DATETIME DEFAULT (DATETIME('now', 'localtime')),
   due_day DATE,
   CHECK (
     (type = 'task' AND due_day IS NOT NULL)
@@ -52,7 +52,7 @@ CREATE TABLE main_tasks (
 );
 `);
 
-        if (await checkCountTable(db, 'main_tasks') === 0) {
+if (await checkCountTable(db, 'main_tasks') === 0) {
             await db.execAsync(`INSERT INTO main_tasks (title, color, type, due_day) VALUES
       ('Morning Meditation', '#4CAF50', 'habit', NULL),
       ('Evening Journaling', '#FF748B', 'habit', NULL),
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   completed INTEGER DEFAULT 0, 
   priority INTEGER NOT NULL DEFAULT 0 CHECK (priority IN (0, 1, 2)), 
   main_task_id INTEGER NOT NULL,
-  create_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-  update_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  create_date DATETIME DEFAULT (DATETIME('now', 'localtime')),
+  update_date DATETIME DEFAULT (DATETIME('now', 'localtime')),
   FOREIGN KEY (main_task_id) REFERENCES main_tasks (id) ON DELETE CASCADE
 );
 `);

@@ -168,7 +168,7 @@ const AllHabits = () => {
         </View>
 
         <BlockHeader isShowSubTitle={false} mainTitle="All Habit" subTitle="see all" isShowBoxCount={taskRender.length > 0 ? true : false} boxCount={taskRender.length} buttonEvent={() => console.log("linh")} isShowButton={true} />
-        <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 110, }}>
+        <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 150, }}>
           {
             <Animated.FlatList
               showsVerticalScrollIndicator={false}
