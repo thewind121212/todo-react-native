@@ -1,17 +1,18 @@
 import { View, Text } from "react-native";
 import ActionSheet, { SheetManager } from "react-native-actions-sheet";
-import { useCalendarStore } from "@/store/calender";
 import { Calendar } from 'react-native-calendars';
 import Button from "../Button";
 import { useState } from "react";
+import { getCurrentDay } from "@/utils/helper";
+import { useCreateMainTaskStore } from "@/store/createMainTask";
 
 
 
 function CreateDueDay() {
-
-    const { currentDay, setDayPick, dayPick } = useCalendarStore();
-
+    const {dayPick, setDayPick} = useCreateMainTaskStore()
     const [localComponentState, setLocalComponentState] = useState<string>(dayPick)
+
+    const currentDay = getCurrentDay()
 
     return (
         <ActionSheet containerStyle={{ backgroundColor: "#222239", "height": "auto" }}>

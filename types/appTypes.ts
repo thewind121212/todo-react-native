@@ -6,6 +6,7 @@ export interface MainTaskType {
     title: string;
     type: 'habit' | 'task';
     update_date: string;
+    remainTimePercent: number;
 }
 
 export interface TaskItemType {
@@ -20,7 +21,7 @@ export interface TaskItemType {
 
 
 
-export type TaskItemQueryType = TaskItemType & { main_task_type: "habit" | "task", primary_color: string, main_task_title: string, main_task_id: number, dueDate: string, createDate : string, }
+export type TaskItemQueryType = TaskItemType & { main_task_type: "habit" | "task", primary_color: string, main_task_title: string, main_task_id: number, dueDate: string, createDate: string, }
 
 export type TaskItemNotHabitType = {
     id: string,

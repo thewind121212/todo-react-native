@@ -1,27 +1,27 @@
-import { StyleSheet, Text, View, TextInput as RNTextInput } from 'react-native'
+import { StyleSheet,  TextInput as RNTextInput } from 'react-native'
 import React from 'react'
+import { useCreateMainTaskStore } from '@/store/createMainTask'
 
 
 interface Props {
-    mainTaskName: string
-    setMainTaskName: (value: string) => void
     placeHolder?: string
     isSheetDirty: boolean
 }
 
-const TextInput: React.FC<Props> = ({ mainTaskName, setMainTaskName, placeHolder = "Place Holder Not Found", isSheetDirty }) => {
+const TextInput: React.FC<Props> = ({ placeHolder = "Place Holder Not Found", isSheetDirty }) => {
     const [foucs, setFocus] = React.useState(false)
+    const { name, setName } = useCreateMainTaskStore()
 
     return (
         <RNTextInput
-            style={[styles.input, { borderBottomColor: (isSheetDirty && mainTaskName.length === 0) ? "#F67280" : (foucs || mainTaskName.length > 0) ? "#7068FF" : "#BBBBD4" }]}
-            placeholder={isSheetDirty && mainTaskName.length === 0 ? "Main task require" : placeHolder}
+            style={[styles.input, { borderBottomColor: (isSheetDirty && name.length === 0) ? "#F67280" : (foucs || name.length > 0) ? "#7068FF" : "#BBBBD4" }]}
+            placeholder={isSheetDirty && name.length === 0 ? "Name task require" : placeHolder}
             keyboardType="default"
-            value={mainTaskName}
-            onChangeText={setMainTaskName}
+            value={name}
+            onChangeText={setName}
             onFocus={() => setFocus(true)}
             onBlur={() => setFocus(false)}
-            placeholderTextColor={isSheetDirty && mainTaskName.length === 0 ? "#F67280" : '#BBBBD4'}
+            placeholderTextColor={isSheetDirty && name.length === 0 ? "#F67280" : '#BBBBD4'}
         />
     )
 }
