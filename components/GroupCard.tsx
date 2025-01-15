@@ -51,7 +51,7 @@ const GroupCard = React.memo(({ mainTaskItem, deleteMainTaskHander, editMainTask
     );
 
     const handlePress = useCallback(() => {
-        SheetManager.show('create-sub-task');
+        SheetManager.show('create-sub-task', { payload: { mainTaskId: mainTaskItem.id , mainTaskTitle: mainTaskItem.title} });
     }, []);
 
     return (

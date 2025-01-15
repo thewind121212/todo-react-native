@@ -25,7 +25,12 @@ declare module 'react-native-actions-sheet' {
     }>;
     'calendarSheet': SheetDefinition;
     'color-picker-sheet': SheetDefinition;
-    'create-sub-task': SheetDefinition;
+    'create-sub-task': SheetDefinition<{
+      payload: {
+        mainTaskId: number,
+        mainTaskTitle?: string,
+      }
+    }>;
   }
 }
 

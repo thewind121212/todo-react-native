@@ -13,6 +13,7 @@ type Props = {
     onPressHandler?: () => void;
     isShowButton?: boolean;
     buttonEvent?: () => void;
+    type?: 'default' | 'primary' | 'secondary'
 };
 
 const BlockHeader = React.memo(({
@@ -25,6 +26,7 @@ const BlockHeader = React.memo(({
     style,
     isShowButton = false,
     buttonEvent = () => { },
+    type = 'default',
 }: Props) => {
 
     const shrinkSharedValue = useSharedValue(1);
@@ -45,38 +47,42 @@ const BlockHeader = React.memo(({
     return (
         <View style={styles.blockHeader}>
             <View style={[styles.titleContainer, style]}>
-                <Text style={styles.mainTitle}>{mainTitle}</Text>
+                <Text style={[styles.mainTitle, { fontSize: type === 'secondary' ? 20 : 26 , color : type === 'secondary' ? '#BBBBD4' : 'white'}]}>{mainTitle}</Text>
                 {isShowBoxCount && (
-                    <View style={styles.boxCountContainer}>
-                        {boxCount !== 0 && <Text style={styles.boxCountText}>{boxCount}</Text>}
+                    <View style={[styles.boxCountContainer, ...(type === 'secondary' ? [{backgroundColor: 'white', width: 24, height: 24, borderRadius: 4, marginLeft: 8,}] : [])]}>
+                        {boxCount !== 0 && <Text style={[styles.boxCountText, ...(type === 'secondary' ? [{ color: '#1A182C', fontSize: 14}] : [])]}>{boxCount}</Text>}
                     </View>
                 )}
             </View>
 
-            {isShowSubTitle && (
-                <Pressable
-                    onPress={onPressHandler}
-                    style={styles.subTitleContainer}
-                    disabled={!onPressHandler}
-                >
-                    <Text style={styles.subTitle}>{subTitle}</Text>
-                </Pressable>
-            )}
-
-            {isShowButton && (
-                <Animated.View style={[styles.animatedButton, buttonAnimatedStyle]}>
+            {
+                isShowSubTitle && (
                     <Pressable
-                        onPress={buttonEvent}
-                        style={styles.buttonPressable}
-                        onPressIn={handlePressIn}
-                        onPressOut={handlePressOut}
-                        android_ripple={{ color: 'rgba(255,255,255,0.3)', radius: 16 }}
+                        onPress={onPressHandler}
+                        style={styles.subTitleContainer}
+                        disabled={!onPressHandler}
                     >
-                        <FontAwesome6 name="plus" size={18} color="white" />
+                        <Text style={styles.subTitle}>{subTitle}</Text>
                     </Pressable>
-                </Animated.View>
-            )}
-        </View>
+                )
+            }
+
+            {
+                isShowButton && (
+                    <Animated.View style={[styles.animatedButton, buttonAnimatedStyle]}>
+                        <Pressable
+                            onPress={buttonEvent}
+                            style={styles.buttonPressable}
+                            onPressIn={handlePressIn}
+                            onPressOut={handlePressOut}
+                            android_ripple={{ color: 'rgba(255,255,255,0.3)', radius: 16 }}
+                        >
+                            <FontAwesome6 name="plus" size={18} color="white" />
+                        </Pressable>
+                    </Animated.View>
+                )
+            }
+        </View >
     );
 });
 
