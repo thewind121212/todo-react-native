@@ -4,11 +4,11 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 
 type Props = {
     isPrimary?: boolean
-    tittle: string
+    title: string
     onPressHandler: () => void
 }
 
-const Button = ({ isPrimary = true, tittle = "button label", onPressHandler = () => { } }: Props) => {
+const Button = ({ isPrimary = true, title = "button label", onPressHandler = () => { } }: Props) => {
     const shinkShareValue = useSharedValue(1)
 
     const buttonStyle = useAnimatedStyle(() => {
@@ -29,17 +29,16 @@ const Button = ({ isPrimary = true, tittle = "button label", onPressHandler = ()
 
     return (
         <Animated.View style={[styles.buttonContainer, buttonStyle, { backgroundColor: isPrimary ? "#7068FF" : "#222239", borderColor: isPrimary ? "transparent" : "#404062" }]}>
-            <Pressable style={{ width: "100%", height: "100%", position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}
+            <Pressable style={styles.button}
                 onPressIn={onPressIn}
                 onPressOut={onPressOut}
             >
-                <Text style={{ color: isPrimary ? "white" : "#BBBBD4", fontSize: 18 }}>{tittle}</Text>
+                <Text style={[styles.title, { color: isPrimary ? "white" : "#BBBBD4" }]}>{title}</Text>
             </Pressable>
         </Animated.View>
     )
 }
 
-export default Button
 
 const styles = StyleSheet.create({
     buttonContainer: {
@@ -50,5 +49,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 14,
         borderWidth: 2,
+    },
+    button: {
+        width: "100%", height: "100%", position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center"
+    },
+    title: {
+        fontSize: 18
     }
 })
+
+export default Button

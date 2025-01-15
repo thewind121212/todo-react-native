@@ -31,12 +31,12 @@ const ColorPickerSheet = () => {
                 {renderColorSection('Memphis Colors', colorData.BRAND_COLOR_SETS['Memphis'])}
                 <View style={styles.buttonContainer}>
                     <Button
-                        tittle="Cancel"
+                        title="Cancel"
                         onPressHandler={() => SheetManager.hide('color-picker-sheet')}
                         isPrimary={false}
                     />
                     <Button
-                        tittle="Set Color"
+                        title="Set Color"
                         onPressHandler={() => SheetManager.hide('color-picker-sheet')}
                     />
                 </View>
