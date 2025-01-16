@@ -1,11 +1,13 @@
 import { registerSheet, SheetDefinition } from 'react-native-actions-sheet';
 import CreateMainTask from '@/components/sheet/CreateMainTask';
 import CreateDueDay from '@/components/sheet/CalendarSheet';
-import CreateSubTaskSheet from '@/components/sheet/CreateSubTask';
 import ColorPickerSheet from '@/components/sheet/ColorPickerSheet';
-import { MainTaskType } from '@/types/appTypes';
+import ShowSubTaskSheet from '@/components/sheet/ShowSubTask';
+import CreateSubTaskSheet from '@/components/sheet/CreateSubTasks';
+import { MainTaskType, TaskItemQueryType } from '@/types/appTypes';
 
 registerSheet('create-main-task', CreateMainTask);
+registerSheet('show-sub-task', ShowSubTaskSheet);
 registerSheet('create-sub-task', CreateSubTaskSheet);
 registerSheet('calendarSheet', CreateDueDay);
 registerSheet('color-picker-sheet', ColorPickerSheet);
@@ -27,7 +29,17 @@ declare module 'react-native-actions-sheet' {
     'color-picker-sheet': SheetDefinition;
     'create-sub-task': SheetDefinition<{
       payload: {
+        siblingTask?: TaskItemQueryType,
+        onSubmit?: (task: TaskItemQueryType, type: 'edit' | 'create') => void,
+        subTaskId?: number,
+        title?: string,
+        isEdit: boolean,
+      }
+    }>;
+    'show-sub-task': SheetDefinition<{
+      payload: {
         mainTaskId: number,
+        primaryColor: string,
         mainTaskTitle?: string,
       }
     }>;

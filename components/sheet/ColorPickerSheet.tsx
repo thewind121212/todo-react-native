@@ -22,7 +22,10 @@ const ColorPickerSheet = () => {
     );
 
     return (
-        <ActionSheet containerStyle={styles.sheetContainer}>
+        <ActionSheet containerStyle={styles.sheetContainer}
+            closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
+            keyboardHandlerEnabled={false}
+        >
             <View style={styles.container}>
                 <Text style={styles.header}>Colors</Text>
                 {renderColorSection('Macaron Colors', colorData.BRAND_COLOR_SETS['Macaron Colors'])}

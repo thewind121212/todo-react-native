@@ -49,8 +49,8 @@ const BlockHeader = React.memo(({
             <View style={[styles.titleContainer, style]}>
                 <Text style={[styles.mainTitle, { fontSize: type === 'secondary' ? 20 : 26 , color : type === 'secondary' ? '#BBBBD4' : 'white'}]}>{mainTitle}</Text>
                 {isShowBoxCount && (
-                    <View style={[styles.boxCountContainer, ...(type === 'secondary' ? [{backgroundColor: 'white', width: 24, height: 24, borderRadius: 4, marginLeft: 8,}] : [])]}>
-                        {boxCount !== 0 && <Text style={[styles.boxCountText, ...(type === 'secondary' ? [{ color: '#1A182C', fontSize: 14}] : [])]}>{boxCount}</Text>}
+                    <View style={[styles.boxCountContainer, ...(type === 'secondary' ? [{backgroundColor: 'white', width: 32, height: 32, borderRadius: 8, marginLeft: 0,}] : [])]}>
+                        {boxCount !== 0 && <Text style={[styles.boxCountText,{fontWeight: type === 'secondary' ? '600' : '400'} ,...(type === 'secondary' ? [{  color: '#1A182C', fontSize: 16}] : [])]}>{boxCount}</Text>}
                     </View>
                 )}
             </View>

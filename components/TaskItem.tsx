@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native'
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useSQLiteContext } from 'expo-sqlite';
+import ContextMenu from 'react-native-context-menu-view';
+import { useSubTaskContext } from '@/store/contextViewSub';
+import { SheetManager } from 'react-native-actions-sheet';
 
 
 type Props = {
@@ -18,6 +21,9 @@ type Props = {
 const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { } }: Props) => {
 
     const [isDone, setIsDone] = useState(false)
+    const { delTasks } = useSubTaskContext();
+
+
 
 
     const scale = useSharedValue(0);
@@ -58,6 +64,24 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
         }
     }
 
+
+
+    const handleContextMenuPress = useCallback(
+        (e: any) => {
+            const index = e.nativeEvent.index;
+            if (index === 1) {
+                // Delete Task Item
+                db.execAsync(`DELETE FROM tasks WHERE id = ${taskItemId}`)
+                delTasks(taskItemId)
+            }
+            if (index === 0) {
+                // Edit Task Item
+                SheetManager.show('create-sub-task', { payload: { isEdit: true, subTaskId: taskItemId, title: cardContent  } });
+            }
+        },
+        [taskItemId]
+    );
+
     useEffect(() => {
         opacity.value = withRepeat(
             withTiming(0.5, { duration: 2000 }),
@@ -66,29 +90,44 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
         );
     }, [opacity]);
     return (
-        <View style={[styles.constainer, { paddingVertical: isSmallVersion ? 12 : 20, }]}>
-            <Animated.View style={[styles.wrapper, animatedStyle, { height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, }]} />
-            <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none", }]}>{cardContent}</Text>
-            <View style={styles.wrapperInner}>
-                <Pressable style={[styles.button, { borderColor: primaryColor, opacity: !isDone ? 1 : 0, width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, }]}
-                    onTouchStart={handlerCheckTask}
-                ></Pressable>
-                <Animated.View style={[{ position: 'absolute' }, animatedStyleScale]} >
-                    <Pressable
-                        onPress={handlerCheckTask}
-                    >
-                        <FontAwesome name="check-circle" size={28} color="#737379" />
-                    </Pressable>
-                </Animated.View>
+
+        <ContextMenu
+            actions={[
+                { title: 'Edit', systemIcon: 'pencil.tip', iconColor: '#1E1E1E' },
+                { title: 'Delete', systemIcon: 'trash', destructive: true },
+            ]}
+            id='taskItemContextMenu'
+            style={styles.contextMenu}
+            onPress={handleContextMenuPress}
+        >
+            <View style={[styles.constainer, { paddingVertical: isSmallVersion ? 12 : 20, }]}>
+                <Animated.View style={[styles.wrapper, animatedStyle, { height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, }]} />
+                <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none", }]}>{cardContent}</Text>
+                <View style={styles.wrapperInner}>
+                    <Pressable style={[styles.button, { borderColor: primaryColor, opacity: !isDone ? 1 : 0, width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, }]}
+                        onTouchStart={handlerCheckTask}
+                    ></Pressable>
+                    <Animated.View style={[{ position: 'absolute' }, animatedStyleScale]} >
+                        <Pressable
+                            onPress={handlerCheckTask}
+                        >
+                            <FontAwesome name="check-circle" size={28} color="#737379" />
+                        </Pressable>
+                    </Animated.View>
+                </View>
             </View>
-        </View>
+        </ContextMenu >
     )
 }
 
 
 const styles = StyleSheet.create({
+    contextMenu: {
+        overflow: 'hidden',
+        borderRadius: 6,
+    },
     constainer: {
-        width: '100%', height: "auto", backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 34, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative"
+        width: '100%', height: "auto", backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 34, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative", zIndex: 1
     },
     wrapper: {
         width: 4,
