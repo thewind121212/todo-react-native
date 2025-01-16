@@ -1,70 +1,74 @@
-import { View, Text, StyleSheet, Pressable, FlatList, Dimensions } from 'react-native'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import {
+    Dimensions,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
+    FlatList
+} from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Carousel from 'react-native-reanimated-carousel';
 import LottieView from 'lottie-react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+}
+    from 'react-native-reanimated';
 import { useOnboardingPersisStore } from '@/store/useOnboarding';
-import {
-    configureReanimatedLogger,
-    ReanimatedLogLevel,
-} from 'react-native-reanimated';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 
 configureReanimatedLogger({
     level: ReanimatedLogLevel.warn,
     strict: true,
 });
 
-const dotPage = ['dot0', 'dot1', 'dot2']
-const imagePage = ['image0', 'image1', 'image2']
-const headerText = ['Plan your schedules easily', 'Make your day become more productive ', 'Manager all your daily tasks']
-const contentText = ['Planing your routine and it will become a habit that lead you to sucess path', 'Make your day become more productive and you will have more time to do what you love', 'Manager all your daily tasks and you will have more time to do what you love']
+const DOT_PAGES = ['dot0', 'dot1', 'dot2'];
+const ANIMATIONS = [
+    { key: 'animation1', source: require('@/assets/animationFiles/animation-1.json') },
+    { key: 'animation2', source: require('@/assets/animationFiles/animation-2.json') },
+    { key: 'animation3', source: require('@/assets/animationFiles/animation-3.json') },
+];
+const HEADER_TEXT = [
+    'Plan your schedules easily',
+    'Make your day become more productive',
+    'Manage all your daily tasks'
+];
+const CONTENT_TEXT = [
+    'Planning your routine will become a habit that leads you to a success path.',
+    'Make your day more productive and have more time to do what you love.',
+    'Manage all your daily tasks and have more time to do what you love.'
+];
 
-
-
-export default function OnBoarding() {
+const OnBoarding = React.memo(() => {
     const [isReady, setIsReady] = useState(false);
+    const { isFinished, setFinished } = useOnboardingPersisStore();
+    const [currentPage, setCurrentPage] = useState<number>(0);
+    const scale = useSharedValue(1);
+    const translateYInfo = useSharedValue(100);
+    const carouselRef = useRef<any>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { height } = Dimensions.get('window');
 
-    const { isFinished, setFinished } = useOnboardingPersisStore()
+    const containerTop = useSharedValue(0);
+    const heroOpacity = useSharedValue(0);
 
+    const containerTopStyle = useAnimatedStyle(() => ({
+        top: containerTop.value,
+    }));
 
-    const [currentPage, setCurrentPage] = useState<number>(0)
-    const scale = useSharedValue(1)
-    const translateYInfo = useSharedValue<any>("100%")
-    const carouselRef = useRef<any>(null)
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    const containerTop = useSharedValue<any>(0)
-    const heroOpacity = useSharedValue(0)
+    const scaleStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
 
-    const {height} = Dimensions.get('window')
+    const translateYStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: translateYInfo.value }],
+    }));
 
-    const containerTopStyle = useAnimatedStyle(() => {
-        return {
-            top: containerTop.value,
-        }
-    })
-
-
-    const scaleStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scale.value }],
-        }
-    })
-
-
-    const translateYStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateY: translateYInfo.value }],
-        }
-    })
-
-
-    const heroOpacityStyle = useAnimatedStyle(() => {
-        return {
-            opacity: heroOpacity.value,
-        }
-    })
-
+    const heroOpacityStyle = useAnimatedStyle(() => ({
+        opacity: heroOpacity.value,
+    }));
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -74,121 +78,112 @@ export default function OnBoarding() {
         return () => clearTimeout(timer);
     }, []);
 
-
     useEffect(() => {
         if (isReady) {
-            translateYInfo.value = withSpring(0, { damping: 100, stiffness: 100 })
-            heroOpacity.value = withSpring(1, { damping: 100, stiffness: 100 })
+            translateYInfo.value = withSpring(0, { damping: 100, stiffness: 100 });
+            heroOpacity.value = withSpring(1, { damping: 100, stiffness: 100 });
         }
-    }, [isReady]);
+    }, [isReady, translateYInfo, heroOpacity]);
 
-    const pressHandler = (direction: 'left' | 'right' = 'right') => {
-        clearTimeout(timerRef.current!)
-        scale.value = withSpring(1.2, { damping: 10, stiffness: 100 })
+    const pressHandler = useCallback((direction: 'left' | 'right' = 'right') => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+        scale.value = withSpring(1.2, { damping: 10, stiffness: 100 });
         if (currentPage === 2 && direction === 'right') {
-            containerTop.value = withSpring(height, { damping: 10, stiffness: 100 })
+            containerTop.value = withSpring(height, { damping: 10, stiffness: 100 });
             timerRef.current = setTimeout(() => {
-                setFinished()
-            }, 500)
-            return
+                setFinished();
+            }, 500);
+            return;
         }
         if (currentPage === 0 && direction === 'left') {
-            return
+            return;
         }
-        direction === 'right' ? setCurrentPage(currentPage + 1) : setCurrentPage(currentPage - 1)
-    }
+        direction === 'right' ? setCurrentPage(prev => prev + 1) : setCurrentPage(prev => prev - 1);
+    }, [currentPage, containerTop, height, scale, setFinished]);
 
-    const pressOutHandler = () => {
-        scale.value = withSpring(1, { damping: 10, stiffness: 100 })
-    }
-
+    const pressOutHandler = useCallback(() => {
+        scale.value = withSpring(1, { damping: 10, stiffness: 100 });
+    }, [scale]);
 
     useEffect(() => {
-        carouselRef.current?.scrollTo({ index: currentPage, animated: true })
-    }, [currentPage])
+        carouselRef.current?.scrollTo({ index: currentPage, animated: true });
+    }, [currentPage]);
 
-
-
-
-    const renderItem = ({ index }: { index: number }) => {
-        return (
-            <View
-                style={[
-                    styles.onboarding_item_count,
-                    currentPage === index ? { width: 35, backgroundColor: '#fff' } : null,
-                ]}
-            />
-        );
-    };
-
+    const renderDot = useCallback(({ index }: { index: number }) => (
+        <View
+            key={`dot-${index}`}
+            style={[
+                styles.onboardingDot,
+                currentPage === index && styles.activeDot
+            ]}
+        />
+    ), [currentPage]);
 
     return (
-        <Animated.View style={[styles.root_container, containerTopStyle]}>
+        <Animated.View style={[styles.rootContainer, containerTopStyle]}>
             <View style={styles.wrapper}>
-                <Animated.View style={[styles.skip_button, heroOpacityStyle]}>
+                <Animated.View style={[styles.skipButton, heroOpacityStyle]}>
                     <Pressable
-                        style={{ width: '100%', height: '100%', justifyContent: 'flex-end', alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 8 }}
-                        onTouchStart={() => setFinished()}
+                        style={styles.skipPressable}
+                        onTouchStart={setFinished}
                     >
-                        <Text style={styles.skip_text}>Skip</Text>
+                        <Text style={styles.skipText}>Skip</Text>
                         <FontAwesome6 name="chevron-right" size={14} color="white" />
                     </Pressable>
                 </Animated.View>
-                <View style={styles.onboarding_item}>
-                    <Animated.View style={[{ width: '100%', height: 520 }, heroOpacityStyle]}>
+                <View style={styles.onboardingItem}>
+                    <Animated.View style={[styles.carouselContainer, heroOpacityStyle]}>
                         <Carousel
                             width={400}
-                            enabled={false}
-                            loop={false}
                             height={400}
-                            data={imagePage}
+                            data={ANIMATIONS}
                             ref={carouselRef}
-                            style={{ marginTop: "25%", marginLeft: 'auto', marginRight: 'auto' }}
+                            loop={false}
+                            autoPlay={false}
                             scrollAnimationDuration={1000}
                             defaultIndex={0}
-                            renderItem={({ index }) => (
-                                <View
-                                    style={{
-                                        flex: 1,
-                                    }}
-                                >
-                                    {index === 0 && <LottieView source={require(`@/assets/animationFiles/animation-1.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
-                                    {index === 1 && <LottieView source={require(`@/assets/animationFiles/animation-2.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
-                                    {index === 2 && <LottieView source={require(`@/assets/animationFiles/animation-3.json`)} autoPlay loop style={{ width: 400, height: 400, marginLeft: 'auto', marginRight: 'auto' }} />}
+                            renderItem={({ item }) => (
+                                <View style={styles.carouselItem}>
+                                    <LottieView
+                                        source={item.source}
+                                        autoPlay
+                                        loop
+                                        style={styles.lottieView}
+                                    />
                                 </View>
                             )}
                         />
                     </Animated.View>
-                    <Animated.View style={[styles.onboarding_item_info, translateYStyle]}>
-                        <Text style={styles.onboarding_item_header}>{headerText[currentPage]}</Text>
-                        <Text style={styles.onboarding_item_content}>{contentText[currentPage]}</Text>
-                        <View style={styles.onboarding_item_count_wrap}>
+                    <Animated.View style={[styles.onboardingInfo, translateYStyle]}>
+                        <Text style={styles.headerText}>{HEADER_TEXT[currentPage]}</Text>
+                        <Text style={styles.contentText}>{CONTENT_TEXT[currentPage]}</Text>
+                        <View style={styles.dotContainer}>
                             <FlatList
-                                data={dotPage}
-                                renderItem={renderItem}
-                                keyExtractor={(item) => item.toString()}
+                                data={DOT_PAGES}
+                                renderItem={renderDot}
+                                keyExtractor={(item) => item}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ justifyContent: 'center', alignContent: 'center', display: 'flex', flexDirection: 'row', gap: 4, width: '100%' }}
+                                contentContainerStyle={styles.flatListContent}
                             />
                         </View>
-                        <View style={{ width: '100%', height: 60, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', position: 'absolute', bottom: 80, left: 32 }}>
-                            {
-                                currentPage !== 0 &&
-                                <Animated.View style={[styles.onboarding_item_button, scaleStyle, { backgroundColor: "#FCC760" }]}>
+                        <View style={styles.buttonContainer}>
+                            {currentPage !== 0 && (
+                                <Animated.View style={[styles.navButton, scaleStyle, styles.leftButton]}>
                                     <Pressable
-                                        style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', transform: [{ rotate: '180deg' }] }}
+                                        style={styles.navPressable}
                                         onPressIn={() => pressHandler('left')}
                                         onPressOut={pressOutHandler}
                                     >
                                         <FontAwesome6 name="arrow-right" size={24} color="white" />
                                     </Pressable>
                                 </Animated.View>
-
-                            }
-                            <Animated.View style={[styles.onboarding_item_button, scaleStyle, { marginLeft: 'auto' }]}>
+                            )}
+                            <Animated.View style={[styles.navButton, scaleStyle, styles.rightButton]}>
                                 <Pressable
-                                    style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'row', gap: 8 }}
+                                    style={styles.navPressable}
                                     onPressIn={() => pressHandler('right')}
                                     onPressOut={pressOutHandler}
                                 >
@@ -199,22 +194,15 @@ export default function OnBoarding() {
                     </Animated.View>
                 </View>
             </View>
-        </Animated.View >
-    )
-}
+        </Animated.View>
+    );
+});
+
+export default OnBoarding;
 
 const styles = StyleSheet.create({
-    skip_button: {
+    rootContainer: {
         position: 'absolute',
-        right: 32,
-        top: 64,
-    },
-    skip_text: {
-        color: '#fff',
-        fontSize: 18,
-    },
-    root_container: {
-        position: 'fixed',
         zIndex: 1000,
         top: 0,
         left: 0,
@@ -223,76 +211,121 @@ const styles = StyleSheet.create({
         backgroundColor: '#1A182C',
     },
     wrapper: {
-        display: 'flex',
-        position: 'relative',
-        flexDirection: 'column',
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100%',
-        width: '100%',
     },
-    onboarding_item: {
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        width: '100%',
-        height: '100%',
+    skipButton: {
         position: 'absolute',
+        top: 64,
+        right: 32,
     },
-    onboarding_item_info: {
-        alignSelf: 'flex-end',
+    skipPressable: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
         width: '100%',
-        overflow: 'hidden',
+        height: '100%',
+        justifyContent: 'flex-end',
+    },
+    skipText: {
+        color: '#fff',
+        fontSize: 18,
+    },
+    onboardingItem: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        justifyContent: 'flex-end',
+    },
+    carouselContainer: {
+        width: '100%',
+        height: 520,
+        marginTop: '25%',
+        alignSelf: 'center',
+    },
+    carouselItem: {
+        flex: 1,
+    },
+    lottieView: {
+        width: 400,
+        height: 400,
+        alignSelf: 'center',
+    },
+    onboardingInfo: {
+        width: '100%',
         height: '42%',
         backgroundColor: '#222239',
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
-        display: 'flex',
-        position: 'relative',
-        flexDirection: 'column',
-        gap: 16,
         padding: 32,
+        gap: 16,
+        position: 'relative',
+        overflow: 'hidden',
     },
-    onboarding_item_header: {
+    headerText: {
         color: '#fff',
         fontSize: 32,
-
     },
-    onboarding_item_content: {
+    contentText: {
         color: '#92919D',
         fontSize: 16,
         lineHeight: 24,
     },
-    onboarding_item_count_wrap: {
-        width: '100%',
+    dotContainer: {
         position: 'absolute',
-        left: 32,
         bottom: 160,
-        justifyContent: 'center',
-        alignContent: 'center',
+        left: 32,
         height: 6,
-        display: 'flex',
         flexDirection: 'row',
-        marginTop: 18,
         gap: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
     },
-    onboarding_item_count: {
+    onboardingDot: {
         width: 15,
-        borderRadius: 100,
         height: '100%',
+        borderRadius: 100,
         backgroundColor: '#676776',
-        transitionDuration: '0.2s',
     },
-    onboarding_item_button: {
-        width: 60,
-        borderRadius: 12,
-        marginTop: 18,
+    activeDot: {
+        width: 35,
+        backgroundColor: '#fff',
+    },
+    buttonContainer: {
+        position: 'absolute',
+        bottom: 80,
+        left: 32,
+        width: '100%',
         height: 60,
-        backgroundColor: '#6D65F8',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
-})
-
-
-
-
-
+    navButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    leftButton: {
+        backgroundColor: '#FCC760',
+    },
+    rightButton: {
+        backgroundColor: '#6D65F8',
+        marginLeft: 'auto',
+    },
+    navPressable: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    flatListContent: {
+        flexDirection: 'row',
+        gap: 4,
+        justifyContent: 'center',
+    },
+});

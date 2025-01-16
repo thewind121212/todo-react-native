@@ -1,87 +1,145 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
-import React, { useEffect } from 'react'
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6'
+import React, { useEffect, useCallback } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 type Props = {
-    isShowSubTitle: boolean
-    style?: any
-    mainTitle: string
-    subTitle: string
-    isShowBoxCount?: boolean
-    boxCount?: number
-    onPressHandler?: () => void
-    isShowButton?: boolean
-    buttonEvent?: () => void
-}
+    isShowSubTitle: boolean;
+    style?: object;
+    mainTitle: string;
+    subTitle: string;
+    isShowBoxCount?: boolean;
+    boxCount?: number;
+    onPressHandler?: () => void;
+    isShowButton?: boolean;
+    buttonEvent?: () => void;
+    type?: 'default' | 'primary' | 'secondary'
+};
 
-const BlockHeader = ({ isShowSubTitle, mainTitle, subTitle, onPressHandler, isShowBoxCount = false, boxCount = 0, style, isShowButton = false, buttonEvent = () => { } }: Props) => {
+const BlockHeader = React.memo(({
+    isShowSubTitle,
+    mainTitle,
+    subTitle,
+    onPressHandler,
+    isShowBoxCount = false,
+    boxCount = 0,
+    style,
+    isShowButton = false,
+    buttonEvent = () => { },
+    type = 'default',
+}: Props) => {
 
-    const shinkShareValue = useSharedValue(1)
+    const shrinkSharedValue = useSharedValue(1);
 
-    const buttonStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: shinkShareValue.value }],
-        }
-    })
+    const buttonAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: shrinkSharedValue.value }],
+    }));
 
+    const handlePressIn = useCallback(() => {
+        buttonEvent();
+        shrinkSharedValue.value = withSpring(0.8, { damping: 10, stiffness: 100 });
+    }, [buttonEvent, shrinkSharedValue]);
 
-    const onPressIn = () => {
-        buttonEvent()
-        shinkShareValue.value = withSpring(0.8, { damping: 10, stiffness: 100 })
-    }
-
-    const onPressOut = () => {
-        shinkShareValue.value = withSpring(1, { damping: 10, stiffness: 100 })
-    }
-
+    const handlePressOut = useCallback(() => {
+        shrinkSharedValue.value = withSpring(1, { damping: 10, stiffness: 100 });
+    }, [shrinkSharedValue]);
 
     return (
         <View style={styles.blockHeader}>
-            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', ...style }}>
-                <Text style={{ fontSize: 26, color: '#fff', fontWeight: "600" }}>{mainTitle}</Text>
-                {
-                    isShowBoxCount && (
-                        <View style={{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#222239', borderRadius: 6, marginLeft: 12 }}>
-                            {boxCount !== 0 && <Text style={{ fontSize: 18, color: '#fff' }}>{boxCount}</Text>}
-                        </View>
-                    )
-                }
+            <View style={[styles.titleContainer, style]}>
+                <Text style={[styles.mainTitle, { fontSize: type === 'secondary' ? 20 : 26 , color : type === 'secondary' ? '#BBBBD4' : 'white'}]}>{mainTitle}</Text>
+                {isShowBoxCount && (
+                    <View style={[styles.boxCountContainer, ...(type === 'secondary' ? [{backgroundColor: 'white', width: 24, height: 24, borderRadius: 4, marginLeft: 8,}] : [])]}>
+                        {boxCount !== 0 && <Text style={[styles.boxCountText, ...(type === 'secondary' ? [{ color: '#1A182C', fontSize: 14}] : [])]}>{boxCount}</Text>}
+                    </View>
+                )}
             </View>
+
             {
                 isShowSubTitle && (
-                    <Pressable onPress={onPressHandler ? () => onPressHandler : undefined} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ fontSize: 18, color: "#94a3b8" }}>{subTitle}</Text>
+                    <Pressable
+                        onPress={onPressHandler}
+                        style={styles.subTitleContainer}
+                        disabled={!onPressHandler}
+                    >
+                        <Text style={styles.subTitle}>{subTitle}</Text>
                     </Pressable>
                 )
             }
 
             {
                 isShowButton && (
-                    <Animated.View style={[{ width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#7068FF', borderRadius: 8, marginLeft: 12 }, buttonStyle]}>
-                        <Pressable onPress={buttonEvent} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32 }}
-                            onPressIn={onPressIn}
-                            onPressOut={onPressOut}
+                    <Animated.View style={[styles.animatedButton, buttonAnimatedStyle]}>
+                        <Pressable
+                            onPress={buttonEvent}
+                            style={styles.buttonPressable}
+                            onPressIn={handlePressIn}
+                            onPressOut={handlePressOut}
+                            android_ripple={{ color: 'rgba(255,255,255,0.3)', radius: 16 }}
                         >
                             <FontAwesome6 name="plus" size={18} color="white" />
                         </Pressable>
                     </Animated.View>
                 )
             }
-        </View>
-    )
-}
+        </View >
+    );
+});
 
-export default BlockHeader
+export default BlockHeader;
 
 const styles = StyleSheet.create({
     blockHeader: {
         width: '100%',
-        height: 'auto',
-        display: 'flex',
         flexDirection: 'row',
         marginBottom: 24,
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-})
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    mainTitle: {
+        fontSize: 26,
+        color: '#fff',
+        fontWeight: '600',
+    },
+    boxCountContainer: {
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#222239',
+        borderRadius: 6,
+        marginLeft: 12,
+    },
+    boxCountText: {
+        fontSize: 18,
+        color: '#fff',
+    },
+    subTitleContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    subTitle: {
+        fontSize: 18,
+        color: '#94a3b8',
+    },
+    animatedButton: {
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#7068FF',
+        borderRadius: 8,
+        marginLeft: 12,
+    },
+    buttonPressable: {
+        width: 32,
+        height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+});

@@ -24,6 +24,5 @@ export function getCurrentDateTime() {
 
 
     const rv = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    console.log(rv)
     return rv
 }

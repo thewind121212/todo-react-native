@@ -17,24 +17,20 @@ const DateInput = ({ isSheetDirty }: propsType) => {
     const { dayPick, setDayPick } = useCreateMainTaskStore()
 
     return (
-        <Pressable style={{ ...styles.container }}
+        <Pressable style={styles.container}
             onPressIn={() => {
                 Keyboard.dismiss()
                 SheetManager.show('calendarSheet')
             }}
         >
             <View
-                style={{
-                    width: "100%", height: "100%", borderColor: (isSheetDirty && dayPick.length === 0) ? "#F67280" : dayPick.length > 0 ? "#7068FF" : "#BBBBD4", borderWidth: 1,
-                    borderRadius: 14,
-                    paddingLeft: 16, display: "flex", justifyContent: "center", alignItems: "flex-start"
-                }}
+                style={[styles.wrapper, { borderColor: (isSheetDirty && dayPick.length === 0) ? "#F67280" : dayPick.length > 0 ? "#7068FF" : "#BBBBD4" }]}
             >
-                <Text style={{ color: dayPick === "" ? "#BBBBD4" : "white", fontSize: 18, fontWeight: 500 }} >{(isSheetDirty && dayPick.length === 0) ? "Please choose date" : dayPick === "" ? "Select Due Day" : new Date(dayPick).toLocaleDateString('vi-VN', FORMAT_OPTIONS)} </Text>
+                <Text style={[styles.title, { color: dayPick === "" ? "#BBBBD4" : "white" }]} >{(isSheetDirty && dayPick.length === 0) ? "Please choose date" : dayPick === "" ? "Select Due Day" : new Date(dayPick).toLocaleDateString('vi-VN', FORMAT_OPTIONS)} </Text>
             </View>
-            <View style={{ height: "100%", aspectRatio: "1/1", position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <View style={styles.buttonContainer}>
                 <Pressable
-                    style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                    style={styles.button}
                     onPressIn={() => dayPick === "" ? SheetManager.show('calendarSheet') : setDayPick("")}
                 >
                     {
@@ -56,5 +52,19 @@ const styles = StyleSheet.create({
     container: {
         width: "100%", height: 60, backgroundColor: "#272741", display: "flex", justifyContent: "center", alignItems: "flex-start", position: "relative",
         overflow: "hidden"
+    },
+    wrapper: {
+        width: "100%", height: "100%", borderWidth: 1,
+        borderRadius: 14,
+        paddingLeft: 16, display: "flex", justifyContent: "center", alignItems: "flex-start"
+    },
+    buttonContainer: {
+        height: "100%", aspectRatio: "1/1", position: "absolute", right: 0, top: 0, display: "flex", justifyContent: "center", alignItems: "center"
+    },
+    button: {
+        width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"
+    },
+    title: {
+        fontSize: 18, fontWeight: 500
     }
 })

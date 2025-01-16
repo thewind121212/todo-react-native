@@ -32,17 +32,17 @@ const CreateOptions = () => {
     }
 
     return (
-        <View style={{ width: "100%", height: "auto", display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: 16, marginTop: 20 }}>
-            <Text style={{ color: "#ACABB4", fontWeight: 500 }}>Type</Text>
-            <View style={{ display: 'flex', width: 120, height: 38, flexDirection: 'row', justifyContent: 'flex-start', gap: 8 }}>
+        <View style={styles.container}>
+            <Text style={styles.title}>Type</Text>
+            <View style={styles.wrapper}>
                 <Pressable onPressIn={onPressIn.bind(null, "habit")} onPressOut={onPressOut}>
-                    <Animated.View style={[{ width: 38, height: 38, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: isHabit ? "#7068FF" : "transparent", borderRadius: 8, borderWidth: 2, borderColor: isHabit ? "transparent" : "#404062" }, buttonStyle]}>
+                    <Animated.View style={[styles.button, buttonStyle, { backgroundColor: isHabit ? "#7068FF" : "transparent", borderColor: isHabit ? "transparent" : "#404062" }]}>
                         <MaterialIcons name="autorenew" size={24} color={isHabit ? "white" : "#BBBBD4"} />
                     </Animated.View>
                 </Pressable>
 
                 <Pressable onPressIn={onPressIn.bind(null, "task")} onPressOut={onPressOut}>
-                    <Animated.View style={[{ width: 38, height: 38, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: !isHabit ? "#7068FF" : "transparent", borderRadius: 8, borderWidth: 2, borderColor: !isHabit ? "transparent" : "#404062" }, buttonStyle]}>
+                    <Animated.View style={[styles.button, buttonStyle, { backgroundColor: !isHabit ? "#7068FF" : "transparent", borderColor: !isHabit ? "transparent" : "#404062" }]} >
                         <MaterialIcons name="checklist" size={24} color={!isHabit ? "white" : "#BBBBD4"} />
                     </Animated.View>
                 </Pressable>
@@ -51,10 +51,22 @@ const CreateOptions = () => {
     )
 }
 
+
+const styles = StyleSheet.create({
+    container: {
+        width: "100%", height: "auto", display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', gap: 16, marginTop: 20
+    },
+    title: {
+        color: "#ACABB4", fontWeight: 500
+    },
+    wrapper: {
+        display: 'flex', width: 120, height: 38, flexDirection: 'row', justifyContent: 'flex-start', gap: 8
+    },
+    button: {
+        width: 38, height: 38, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 8, borderWidth: 2,
+    }
+})
+
 export default CreateOptions
 
-const styles = StyleSheet.create({})
 
-function onPressHandler() {
-    throw new Error('Function not implemented.');
-}

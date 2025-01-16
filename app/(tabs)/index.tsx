@@ -201,19 +201,24 @@ const Index = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      {
-        <Modal style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }} transparent={true} visible={!isFinished}>
-          <OnBoarding />
-        </Modal>
-      }
+      <Modal style={styles.modal} transparent={true} visible={!isFinished}>
+        <OnBoarding />
+      </Modal>
 
       <View style={styles.helloBlock}>
-        <Text style={{ fontSize: 32, color: '#fff', fontWeight: 300 }}>
-          <Text style={{ color: "#FF748B" }} >{getGreeting()} </Text>
-          <Text style={{ fontWeight: 600 }}>LinhTran</Text></Text>
+        <Text style={styles.greetingText}>
+          <Text style={styles.greetingColor}>{getGreeting()} </Text>
+          <Text style={styles.greetingName}>LinhTran</Text>
+        </Text>
       </View>
 
-      <BlockHeader isShowSubTitle={false} mainTitle="Habit Overview" subTitle="see all" isShowBoxCount={false} boxCount={TOTAL_TASKS} />
+      <BlockHeader
+        isShowSubTitle={false}
+        mainTitle="Habit Overview"
+        subTitle="see all"
+        isShowBoxCount={false}
+        boxCount={TOTAL_TASKS}
+      />
       {
         allTasks.habit.length > 0 && !allTasks.loading && (
           <OverviewHomeHabit doneTask={completedHabit} allTasks={allTasks.habit.length} />
@@ -224,7 +229,13 @@ const Index = () => {
           <OverviewHabitPlaceHolder />
         )
       }
-      <BlockHeader isShowSubTitle={false} mainTitle="Task Overview" subTitle="see all" isShowBoxCount={false} boxCount={1} />
+      <BlockHeader
+        isShowSubTitle={false}
+        mainTitle="Task Overview"
+        subTitle="see all"
+        isShowBoxCount={false}
+        boxCount={1}
+      />
       {
         allTasks.tasks.length > 0 && !allTasks.loading && (
           <OverviewHomeTask tasks={allTasks.tasks} fullPercent={fullPercent} taskRandom={taskRandom} />
@@ -235,17 +246,30 @@ const Index = () => {
           <OverviewHomeTaskPlaceHolder />
         )
       }
-      <BlockHeader isShowSubTitle={true} mainTitle="Recent Habit" subTitle="see all" isShowBoxCount={true} boxCount={allTasks.habit.length} />
-      <View style={{ flexDirection: 'column', width: '100%', height: "auto", overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
+      <BlockHeader
+        isShowSubTitle={true}
+        mainTitle="Recent Habit"
+        subTitle="see all"
+        isShowBoxCount={true}
+        boxCount={allTasks.habit.length}
+      />
+      <View style={styles.columnContainer}>
         {
           habitByPriority.length > 0 && !allTasks.loading && habitByPriority.map((item) =>
-            <TaskItem key={item.id} cardContent={item.title} primaryColor={item.primary_color} taskItemId={item.id} isUseSetDoneLocal={true} isDoneProps={item.completed === 1 ? true : false} />
+            <TaskItem
+              key={item.id}
+              cardContent={item.title}
+              primaryColor={item.primary_color}
+              taskItemId={item.id}
+              isUseSetDoneLocal={true}
+              isDoneProps={item.completed === 1 ? true : false}
+            />
           )
         }
         {
           (habitByPriority.length === 0 || allTasks.loading) && (
-            <View style={{ width: "100%", height: 400, display: "flex", justifyContent: "center", alignContent: "center" }} >
-              <Text style={{ textAlign: "center", fontSize: 24, color: "#94a3b8" }}>Empty</Text>
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Empty</Text>
             </View>
           )
         }
@@ -260,13 +284,24 @@ const Index = () => {
         }
       </View>
 
-      <BlockHeader isShowSubTitle={true} mainTitle="Recent Task" subTitle="see all" isShowBoxCount={true} boxCount={12} />
+      <BlockHeader
+        isShowSubTitle={true}
+        mainTitle="Recent Task"
+        subTitle="see all"
+        isShowBoxCount={true}
+        boxCount={12}
+      />
 
-      <View style={{ flexDirection: 'column', width: '100%', height: 'auto', overflow: 'hidden', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 14, marginBottom: 20 }}>
-
+      <View style={styles.columnContainer}>
         {
           modifiyTask.length > 0 && !allTasks.loading && modifiyTask.map((item) =>
-            <MainTask key={item.id} mainTaskName={item.title} overAllPercent={item.completePercent} remainTimePercent={item.remainTimePercent} primaryColor={item.primary_color} />
+            <MainTask
+              key={item.id}
+              mainTaskName={item.title}
+              overAllPercent={item.completePercent}
+              remainTimePercent={item.remainTimePercent}
+              primaryColor={item.primary_color}
+            />
           )
         }
         {
@@ -278,7 +313,6 @@ const Index = () => {
             </>
           )
         }
-
       </View>
 
     </ScrollView>
@@ -302,6 +336,42 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 20
   },
-})
+  modal: {
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+  },
+  greetingText: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: '300',
+  },
+  greetingColor: {
+    color: "#FF748B",
+  },
+  greetingName: {
+    fontWeight: '600',
+  },
+  columnContainer: {
+    flexDirection: 'column',
+    width: '100%',
+    height: 'auto',
+    overflow: 'hidden',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    gap: 14,
+    marginBottom: 20,
+  },
+  emptyContainer: {
+    width: "100%",
+    height: 400,
+    display: "flex",
+    justifyContent: "center",
+    alignContent: "center",
+  },
+  emptyText: {
+    textAlign: "center",
+    fontSize: 24,
+    color: "#94a3b8",
+  },
+});
 
 export default Index

@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable, Keyboard } from "react-native";
+import { View, Text, Image, Pressable, Keyboard, StyleSheet } from "react-native";
 import ActionSheet, { SheetManager, SheetProps } from "react-native-actions-sheet";
 import ColorPicker from "../inputFileds/ColorPicker";
 import { useState, useCallback, useMemo, useEffect } from "react";
@@ -6,44 +6,42 @@ import TextInput from "../inputFileds/TextInput";
 import DateInput from "../inputFileds/DateInput";
 import CreateOptions from "../inputFileds/CreateOptions";
 
-import colorData from "../../data/colors.json"
+import colorData from "../../data/colors.json";
 import { useCreateMainTaskStore } from "@/store/createMainTask";
 import Button from "../Button";
 import { useSQLiteContext } from "expo-sqlite";
 import { calcRemainTimePercent, getCurrentDateTime } from "@/utils/helper";
 import { MainTaskType } from "@/types/appTypes";
 
-
 function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
+  const { name, dayPick, color, resetState, setName, setDayPick, setColor, createType, setCreateType } = useCreateMainTaskStore();
 
-  const { name, dayPick, color, resetState, setName, setDayPick, setColor, createType, setCreateType } = useCreateMainTaskStore()
+  const [isSheetDirty, setIsSheetDirty] = useState<boolean>(false);
+  const db = useSQLiteContext();
 
+  useEffect(() => {
+    if (payload?.type === "editHabit" || payload?.type === "editTask") {
+      setCreateType(payload.task?.type || 'task'); // Providing a default value
+      setName(payload.task?.title || '');
+      setColor(payload.task?.color || '');
+      setDayPick(payload.task?.due_day || "");
+    }
+  }, [payload, setCreateType, setName, setColor, setDayPick]);
 
-  const [isSheetDirty, setIsSheetDirty] = useState<boolean>(false)
-  const db = useSQLiteContext()
-
-  if (payload?.type === "editHabit" || payload?.type === "editTask") {
-    useEffect(() => {
-      setCreateType(payload?.task?.type!)
-      setName(payload?.task?.title!)
-      setColor(payload?.task?.color!)
-      setDayPick(payload?.task?.due_day! ? payload.task.due_day! : "")
-    }, [])
-  }
-
-
-
-  const createMainTaskHander = useCallback(async () => {
-    setIsSheetDirty(true)
-    if (createType === "task" && dayPick === "") return
-    if (name === "" || color === "") return
+  const createMainTaskHandler = useCallback(async () => {
+    setIsSheetDirty(true);
+    if (createType === "task" && dayPick === "") return;
+    if (name === "" || color === "") return;
 
     try {
       if (payload?.type === "editHabit" || payload?.type === "editTask") {
-        if (payload?.onUpdateTask && payload.task) {
+        if (payload.onUpdateTask && payload.task) {
           await db.runAsync(
-            `UPDATE main_tasks SET title = ?, color = ?, due_day = ?  WHERE id = ?`,
-            name, color, dayPick ? dayPick : null, payload.task.id,
+            `UPDATE main_tasks SET title = ?, color = ?, due_day = ? WHERE id = ?`,
+            name,
+            color,
+            dayPick ? dayPick : null,
+            payload.task.id
           );
           const newTask: MainTaskType = {
             id: payload.task.id,
@@ -54,13 +52,16 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
             due_day: dayPick ? dayPick : null,
             color: color,
             remainTimePercent: dayPick ? calcRemainTimePercent(dayPick, payload.task.create_date) : 0
-          }
-          payload.onUpdateTask(payload.task?.id!, newTask)
+          };
+          payload.onUpdateTask(payload.task.id, newTask);
         }
       } else {
         const log = await db.runAsync(
           `INSERT INTO main_tasks (title, type, due_day, color) VALUES (?, ?, ?, ?)`,
-          name, createType, dayPick ? dayPick : null, color
+          name,
+          createType,
+          dayPick ? dayPick : null,
+          color
         );
         payload?.onTaskCreate(createType, {
           id: log.lastInsertRowId,
@@ -71,39 +72,40 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
           due_day: dayPick ? dayPick : null,
           color: color,
           remainTimePercent: dayPick ? calcRemainTimePercent(dayPick, getCurrentDateTime()) : 0
-        })
+        });
       }
 
-
-      SheetManager.hide('create-main-task')
+      SheetManager.hide('create-main-task');
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setTimeout(() => {
-        SheetManager.hide('create-main-task')
-      }, 200)
+        SheetManager.hide('create-main-task');
+      }, 200);
     }
+  }, [name, dayPick, color, createType, db, payload]);
 
-  }, [name, dayPick, color])
-
-
-  const handerOnShetClose = useCallback(() => {
-    setIsSheetDirty(false)
-    resetState()
-  }, [])
+  const handleOnCloseSheet = useCallback(() => {
+    setIsSheetDirty(false);
+    resetState();
+  }, [resetState]);
 
   const isIncludesInColorInit = useMemo(() => {
-    return colorData.INIT_COLOR_PICKER.includes(color)
-  }, [color])
+    return colorData.INIT_COLOR_PICKER.includes(color);
+  }, [color]);
 
+  const isEdit = payload?.type === "editHabit" || payload?.type === "editTask";
 
-  const isEdit = payload?.type === "editHabit" || payload?.type === "editTask"
+  const showCustomColorPicker = useMemo(() => {
+    return !isIncludesInColorInit && color !== "";
+  }, [isIncludesInColorInit, color]);
 
   return (
-    <ActionSheet containerStyle={{ backgroundColor: "#222239", height: "auto" }}
-      onBeforeClose={handerOnShetClose}
+    <ActionSheet
+      containerStyle={styles.actionSheetContainer}
+      onBeforeClose={handleOnCloseSheet}
     >
-      <View style={{ width: "auto", height: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 12, paddingBottom: 40 }}>
-        <Text style={{ color: "white", fontSize: 24, textAlign: "center", fontWeight: 600 }}>{isEdit ? "Edit" : "Create"} Main Task</Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>{isEdit ? "Edit" : "Create"} Main Task</Text>
         <TextInput placeHolder="Main Task" isSheetDirty={isSheetDirty} />
         {
           !isEdit && (<CreateOptions />)
@@ -111,60 +113,119 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
         {
           (createType === "task" || payload?.type === "editTask") && (
             <>
-              <Text style={{ color: "#ACABB4", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>Date</Text>
+              <Text style={styles.label}>Date</Text>
               <DateInput isSheetDirty={isSheetDirty} />
             </>
           )
         }
-        <View style={{ width: "100%", height: "auto", display: "flex", flexDirection: "row", justifyContent: "flex-start", gap: 8 }}
-        >
-          <Text style={{ color: "#ACABB4", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>Color</Text>
+        <View style={styles.colorLabelContainer}>
+          <Text style={styles.label}>Color</Text>
           {
             isSheetDirty && color === "" && (
-              <Text style={{ color: "#F67280", marginTop: 20, marginBottom: 8, fontWeight: 500 }}>{`(color is require)`}</Text>
+              <Text style={styles.errorText}>(color is required)</Text>
             )
           }
-
         </View>
-        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start', gap: 4 }}>
-
+        <View style={styles.colorPickerContainer}>
           {
-            colorData.INIT_COLOR_PICKER.map((item, index) => {
-              return (
-                <ColorPicker colorValue={item} key={index} />
-              )
-            })
-
+            colorData.INIT_COLOR_PICKER.map((item) => (
+              <ColorPicker colorValue={item} key={item} />
+            ))
           }
           {
-            (isIncludesInColorInit || color === "") ? (
-              <Pressable style={{ width: 48, height: 48, borderRadius: "50%", display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            showCustomColorPicker ? (
+              <ColorPicker colorValue={color} isChoose={true} />
+            ) : (
+              <Pressable
+                accessibilityLabel="Open color picker"
+                accessibilityRole="button"
+                style={styles.customColorPressable}
                 onPressIn={() => {
-                  Keyboard.dismiss()
-                  SheetManager.show('color-picker-sheet')
+                  Keyboard.dismiss();
+                  SheetManager.show('color-picker-sheet');
                 }}
               >
-                <Image source={require('../../assets/colorful.png')} style={{ width: 36, height: 36 }} />
+                <Image source={require('../../assets/colorful.png')} style={styles.colorfulImage} />
               </Pressable>
-            ) : (
-
-              <ColorPicker colorValue={color} isChoose={true} />
             )
           }
         </View>
 
-        <View style={{ width: "100%", height: "auto", display: "flex", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", paddingHorizontal: 10, gap: 24, marginTop: 30 }} >
-          <Button tittle="Cancel" onPressHandler={() => SheetManager.hide('create-main-task')} isPrimary={false} />
-          <Button tittle="Set Day" onPressHandler={createMainTaskHander} />
+        <View style={styles.buttonContainer}>
+          <Button title="Cancel" onPressHandler={() => SheetManager.hide('create-main-task')} isPrimary={false} />
+          <Button title="Set Day" onPressHandler={createMainTaskHandler} />
         </View>
       </View>
     </ActionSheet>
   );
 }
 
-
-
-
-
+const styles = StyleSheet.create({
+  actionSheetContainer: {
+    backgroundColor: "#222239",
+    height: "auto",
+  },
+  container: {
+    width: "auto",
+    height: "auto",
+    padding: 20,
+    flexDirection: "column",
+    gap: 12,
+    paddingBottom: 40,
+  },
+  title: {
+    color: "white",
+    fontSize: 24,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  label: {
+    color: "#ACABB4",
+    marginTop: 20,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  errorText: {
+    color: "#F67280",
+    marginTop: 20,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  colorLabelContainer: {
+    width: "100%",
+    height: "auto",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 8,
+  },
+  colorPickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 4,
+  },
+  customColorPressable: {
+    width: 48,
+    height: 48,
+    borderRadius: 24, // Half of width/height for a circle
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  colorfulImage: {
+    width: 36,
+    height: 36,
+  },
+  buttonContainer: {
+    width: "100%",
+    height: "auto",
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    gap: 24,
+    marginTop: 30,
+  },
+});
 
 export default CreateMainTask;
+

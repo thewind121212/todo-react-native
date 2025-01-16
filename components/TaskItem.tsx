@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -66,11 +66,11 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
         );
     }, [opacity]);
     return (
-        <View style={{ width: '100%', height: "auto", paddingVertical: isSmallVersion ? 12 : 20, backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 34, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative" }}>
-            <Animated.View style={[{ width: 4, height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, position: "absolute", left: 20, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderBottomLeftRadius: 8 }, animatedStyle]} />
-            <Text style={{ color: isDone ? "#737379" : "#FFFFFF", fontSize: 18, fontWeight: "400", textDecorationLine: isDone ? 'line-through' : "none", maxWidth: "80%" }}>{cardContent}</Text>
-            <View style={{ width: 28, height: 28, aspectRatio: "1/1", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <Pressable style={{ width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, borderRadius: "50%", borderColor: primaryColor, borderWidth: 2.4, opacity: !isDone ? 1 : 0 }}
+        <View style={[styles.constainer, { paddingVertical: isSmallVersion ? 12 : 20, }]}>
+            <Animated.View style={[styles.wrapper, animatedStyle, { height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, }]} />
+            <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none", }]}>{cardContent}</Text>
+            <View style={styles.wrapperInner}>
+                <Pressable style={[styles.button, { borderColor: primaryColor, opacity: !isDone ? 1 : 0, width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, }]}
                     onTouchStart={handlerCheckTask}
                 ></Pressable>
                 <Animated.View style={[{ position: 'absolute' }, animatedStyleScale]} >
@@ -84,5 +84,25 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
         </View>
     )
 }
+
+
+const styles = StyleSheet.create({
+    constainer: {
+        width: '100%', height: "auto", backgroundColor: '#222239', borderRadius: 8, paddingRight: 20, paddingLeft: 34, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', position: "relative"
+    },
+    wrapper: {
+        width: 4,
+        position: "absolute", left: 20, borderTopLeftRadius: 8, borderTopRightRadius: 8, borderBottomRightRadius: 8, borderBottomLeftRadius: 8
+    },
+    cartContent: {
+        fontSize: 18, fontWeight: "400", maxWidth: "80%"
+    },
+    wrapperInner: {
+        width: 28, height: 28, aspectRatio: "1/1", display: "flex", justifyContent: "center", alignItems: "center"
+    },
+    button: {
+        borderRadius: "50%", borderWidth: 2.4,
+    }
+})
 
 export default TaskItem

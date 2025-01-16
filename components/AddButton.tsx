@@ -27,11 +27,11 @@ const AddButton = () => {
 
     return (
 
-        <Animated.View style={[{ width: 64, height: 64, backgroundColor: '#7068FF', borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center" }, buttonStyle]}>
+        <Animated.View style={[styles.containter, buttonStyle]}>
             <Pressable
                 onPressIn={onPressIn}
                 onPressOut={onPressOut}
-                style={{ width: 64, height: 64, display: "flex", justifyContent: "center", alignItems: "center" }}
+                style={styles.button}
             >
                 <FontAwesome6 name="plus" size={24} color="white" />
             </Pressable>
@@ -39,6 +39,14 @@ const AddButton = () => {
     )
 }
 
-export default AddButton
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    containter: {
+        width: 64, height: 64, backgroundColor: '#7068FF', borderRadius: 12, display: "flex", justifyContent: "center", alignItems: "center"
+    },
+    button: {
+        width: 64, height: 64, display: "flex", justifyContent: "center", alignItems: "center"
+    }
+})
+
+export default AddButton
