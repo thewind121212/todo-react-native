@@ -42,7 +42,7 @@ type Props = {
 }
 
 const MainTask = React.memo(({ mainTaskName, overAllPercent, remainTimePercent, primaryColor, isRenderProgress = true }: Props) => {
-    const translateX = useSharedValue(100);
+    const translateX = useSharedValue<any>("100%");
     const { width } = Dimensions.get('window');
 
     const translateXStyle = useAnimatedStyle(() => ({
@@ -53,15 +53,14 @@ const MainTask = React.memo(({ mainTaskName, overAllPercent, remainTimePercent, 
     useEffect(() => {
         translateX.value = withRepeat(
             withSequence(
-                withTiming(0, { duration: 1500 }),
-                withDelay(300, withTiming(0, { duration: 0 })),
+                withTiming("0", { duration: 1500 }),
+                withDelay(300, withTiming("0", { duration: 0 })),
             ),
             -1,
-            false
-        );
-    }, [translateX]);
+        )
+    }, [])
 
-    const gradientColors = getGradientColor(remainTimePercent);
+
 
     return (
         <View style={[styles.container, { paddingVertical: isRenderProgress ? 32 : 24 }]}>
@@ -77,11 +76,11 @@ const MainTask = React.memo(({ mainTaskName, overAllPercent, remainTimePercent, 
                         color={primaryColor}
                         animationDirection='clockwise'
                     />
-                    <Text style={styles.percentText}>{overAllPercent}%</Text>
+                    <Text style={styles.percentText}>{overAllPercent.toFixed(0)}%</Text>
                 </View>
             </View>
             {isRenderProgress && (
-                <View style={[styles.progressBarContainer, { width: (width - 40) * (remainTimePercent / 100) }]}>
+                <View style={[styles.progressBarContainer, { width: Math.min((width - 40) * (remainTimePercent / 100), width) }]}>
                     <View style={styles.progressBarBackground}>
                         <LinearGradient
                             colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}

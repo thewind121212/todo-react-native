@@ -12,6 +12,9 @@ import Button from "../Button";
 import { useSQLiteContext } from "expo-sqlite";
 import { calcRemainTimePercent, getCurrentDateTime } from "@/utils/helper";
 import { MainTaskType } from "@/types/appTypes";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { dismiss } from "expo-router/build/global-state/routing";
+import { runOnJS } from "react-native-reanimated";
 
 function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
   const { name, dayPick, color, resetState, setName, setDayPick, setColor, createType, setCreateType } = useCreateMainTaskStore();
@@ -21,7 +24,7 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
 
   useEffect(() => {
     if (payload?.type === "editHabit" || payload?.type === "editTask") {
-      setCreateType(payload.task?.type || 'task'); // Providing a default value
+      setCreateType(payload.task?.type || 'task');
       setName(payload.task?.title || '');
       setColor(payload.task?.color || '');
       setDayPick(payload.task?.due_day || "");
@@ -99,63 +102,76 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
     return !isIncludesInColorInit && color !== "";
   }, [isIncludesInColorInit, color]);
 
+  const disMissKeyBoard = () => {
+    Keyboard.dismiss();
+  }
+
+  const tapGesture = Gesture.Tap().onStart(() => {
+    runOnJS(disMissKeyBoard)();
+  })
+
+
   return (
     <ActionSheet
       containerStyle={styles.actionSheetContainer}
       onBeforeClose={handleOnCloseSheet}
+      closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
+      keyboardHandlerEnabled={true}
     >
-      <View style={styles.container}>
-        <Text style={styles.title}>{isEdit ? "Edit" : "Create"} Main Task</Text>
-        <TextInput placeHolder="Main Task" isSheetDirty={isSheetDirty} />
-        {
-          !isEdit && (<CreateOptions />)
-        }
-        {
-          (createType === "task" || payload?.type === "editTask") && (
-            <>
-              <Text style={styles.label}>Date</Text>
-              <DateInput isSheetDirty={isSheetDirty} />
-            </>
-          )
-        }
-        <View style={styles.colorLabelContainer}>
-          <Text style={styles.label}>Color</Text>
+      <GestureDetector gesture={tapGesture}>
+        <View style={styles.container}>
+          <Text style={styles.title}>{isEdit ? "Edit" : "Create"} Main Task</Text>
+          <TextInput placeHolder="Main Task" isSheetDirty={isSheetDirty} />
           {
-            isSheetDirty && color === "" && (
-              <Text style={styles.errorText}>(color is required)</Text>
+            !isEdit && (<CreateOptions />)
+          }
+          {
+            (createType === "task" || payload?.type === "editTask") && (
+              <>
+                <Text style={styles.label}>Date</Text>
+                <DateInput isSheetDirty={isSheetDirty} />
+              </>
             )
           }
-        </View>
-        <View style={styles.colorPickerContainer}>
-          {
-            colorData.INIT_COLOR_PICKER.map((item) => (
-              <ColorPicker colorValue={item} key={item} />
-            ))
-          }
-          {
-            showCustomColorPicker ? (
-              <ColorPicker colorValue={color} isChoose={true} />
-            ) : (
-              <Pressable
-                accessibilityLabel="Open color picker"
-                accessibilityRole="button"
-                style={styles.customColorPressable}
-                onPressIn={() => {
-                  Keyboard.dismiss();
-                  SheetManager.show('color-picker-sheet');
-                }}
-              >
-                <Image source={require('../../assets/colorful.png')} style={styles.colorfulImage} />
-              </Pressable>
-            )
-          }
-        </View>
+          <View style={styles.colorLabelContainer}>
+            <Text style={styles.label}>Color</Text>
+            {
+              isSheetDirty && color === "" && (
+                <Text style={styles.errorText}>(color is required)</Text>
+              )
+            }
+          </View>
+          <View style={styles.colorPickerContainer}>
+            {
+              colorData.INIT_COLOR_PICKER.map((item) => (
+                <ColorPicker colorValue={item} key={item} />
+              ))
+            }
+            {
+              showCustomColorPicker ? (
+                <ColorPicker colorValue={color} isChoose={true} />
+              ) : (
+                <Pressable
+                  accessibilityLabel="Open color picker"
+                  accessibilityRole="button"
+                  style={styles.customColorPressable}
+                  onPressIn={() => {
+                    Keyboard.dismiss();
+                    SheetManager.show('color-picker-sheet');
+                  }}
+                >
+                  <Image source={require('../../assets/colorful.png')} style={styles.colorfulImage} />
+                </Pressable>
+              )
+            }
+          </View>
 
-        <View style={styles.buttonContainer}>
-          <Button title="Cancel" onPressHandler={() => SheetManager.hide('create-main-task')} isPrimary={false} />
-          <Button title="Set Day" onPressHandler={createMainTaskHandler} />
+          <View style={styles.buttonContainer}>
+            <Button title="Cancel" onPressHandler={() => SheetManager.hide('create-main-task')} isPrimary={false} />
+            <Button title="Appy" onPressHandler={createMainTaskHandler} />
+          </View>
         </View>
-      </View>
+      </GestureDetector>
     </ActionSheet>
   );
 }

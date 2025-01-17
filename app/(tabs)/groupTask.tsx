@@ -74,7 +74,7 @@ const AllTasks = () => {
         },
       },
     });
-  }, [allTasks.allMainTasks, startTransition]);
+  }, [allTasks.allMainTasks, startTransition, SheetManager]);
 
 
   const skeletonArray = useMemo(() => [...Array(5).keys()], []);
