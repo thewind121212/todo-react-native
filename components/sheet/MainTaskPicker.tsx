@@ -39,11 +39,10 @@ const MainTaskPicker = ({ payload }: SheetProps<'main-task-picker'>) => {
     return (
         <ActionSheet
             containerStyle={{ ...styles.actionSheetContainer }}
-            closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
-            keyboardHandlerEnabled={true}
+            keyboardHandlerEnabled={false}
         >
 
-            <Text style={styles.title}>Chose Sub Task</Text>
+            <Text style={styles.title}>Main Task To Add</Text>
             <View style={{ height: 'auto', display: "flex", flexDirection: "column", gap: 10 }}>
                 {
                     allMainTasks.map((item) => (

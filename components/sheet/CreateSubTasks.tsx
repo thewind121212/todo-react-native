@@ -99,8 +99,7 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
     return (
         <ActionSheet
             containerStyle={styles.actionSheetContainer}
-            closeAnimationConfig={{ ...SHEET_TOOGE_ANIMATION }}
-            onOpen={() => {
+            onBeforeShow={() => {
                 if (payload?.type === 'edit' && payload?.title) {
                     setSubTask({
                         ...subTask,
@@ -112,7 +111,6 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
                         name: "",
                     })
                 }
-                inputRef.current?.focus()
             }}
         >
             <View style={styles.container}>

@@ -15,8 +15,6 @@ SystemNavigationBar.setNavigationColor("#1A182C");
 export default function RootLayout() {
 
 
-
-
   return (
     <GestureHandlerRootView>
       <SafeAreaProvider>

@@ -113,7 +113,7 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
         >
             <View style={[styles.constainer, { paddingVertical: isSmallVersion ? 12 : 20, }]}>
                 <Animated.View style={[styles.wrapper, animatedStyle, { height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, }]} />
-                <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none", }]}>{cardContent}</Text>
+                <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none" }]}>{cardContent}</Text>
                 <View style={styles.wrapperInner}>
                     <Pressable style={[styles.button, { borderColor: primaryColor, opacity: !isDone ? 1 : 0, width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, }]}
                         onTouchStart={handlerCheckTask}

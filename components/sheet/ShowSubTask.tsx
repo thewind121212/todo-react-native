@@ -182,7 +182,6 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
             snapPoints={[60, 102]}
             initialSnapIndex={0}
             onSnapIndexChange={setIndex}
-            closeAnimationConfig={{ stiffness: 1000, damping: 500, mass: 5, overshootClamping: false, restDisplacementThreshold: 0.01, restSpeedThreshold: 0.01 }}
             onClose={() => {
                 setLoading(true)
             }}
@@ -215,9 +214,9 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
                                 buttonEvent={() => SheetManager.show('create-sub-task', {
                                     payload: {
                                         type: 'create',
-                                        mainTaskId: tasks[0]?.main_task_id,
+                                        mainTaskId: tasks[0]?.main_task_id ? tasks[0]?.main_task_id : payload?.mainTaskId!,
                                         title: '',
-                                        color: tasks[0]?.primary_color,
+                                        color: tasks[0]?.primary_color ? tasks[0]?.primary_color : payload?.primaryColor!,
                                     }
                                 })}
                             />
@@ -298,6 +297,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         textAlign: "center",
         fontWeight: "bold",
+        maxWidth: '60%',
     },
     header: {
         flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", paddingRight: 24, paddingLeft: 24

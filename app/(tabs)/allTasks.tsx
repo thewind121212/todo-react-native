@@ -1,5 +1,5 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
+import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text, StatusBar } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useEffect, useMemo, useState } from 'react'
@@ -8,11 +8,18 @@ import AddButton from '@/components/AddButton';
 import { useSQLiteContext } from 'expo-sqlite';
 import { TaskItemNotHabitType, TaskItemQueryType } from '@/types/appTypes';
 import TaskTree, { TaskTreePlaceHolder } from '@/components/TaskTree';
+import { FlashList } from "@shopify/flash-list";
+
 import { MotiView } from 'moti';
+
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Spacer = ({ height = 16 }) => <MotiView style={{ height }} />
 
+
+
 const AllTask = () => {
+
 
     const [refreshing, setRefreshing] = useState(false);
     const [allTasks, setAllTasks] = useState<{
@@ -106,36 +113,19 @@ const AllTask = () => {
     }, [allTasks])
 
 
-    return (
-        <View style={styles.outerContainer}>
-            {/* Floating AddButton */}
-            <View
-                style={[
-                    styles.addButtonContainer,
-                    {
-                        top: height - 264, // 64 (AddButton height) + 200 (offset)
-                        right: -(width / 2 - 50),
-                    },
-                ]}
-            >
-                <AddButton />
-            </View>
 
-            <ScrollView
-                style={styles.container}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-            >
+
+    return (
+        <SafeAreaProvider>
+            <SafeAreaView style={styles.safeArea}>
                 {/* Search Bar */}
                 <View style={styles.searchContainer}>
                     <TextInput
                         style={styles.input}
                         placeholder="Search"
                         value={query}
-                        onChangeText={setQuery}
+                        onChangeText={handleSearch}
                         placeholderTextColor="#4D4C71"
-                        onSubmitEditing={handleSearch}
                     />
                     <View style={styles.searchIconContainer}>
                         <Ionicons name="search" size={32} color="white" />
@@ -149,7 +139,6 @@ const AllTask = () => {
                         )}
                     </Pressable>
                 </View>
-
                 {/* Block Header */}
                 <BlockHeader
                     isShowSubTitle={false}
@@ -162,17 +151,24 @@ const AllTask = () => {
                 {/* Task List */}
                 <View style={styles.tasksListContainer}>
                     {allTasks.tasks.length > 0 && !allTasks.loading ? (
-                        allTasks.tasks.map((item) => (
-                            <TaskTree
-                                key={item.id}
-                                mainTaskId={item.id}
-                                mainTaskName={item.title}
-                                color={item.primary_color}
-                                data={item.data}
-                                dueDate={item.dueDate}
-                                taskCreatDay={item.createDate}
+                        <View style={{ width: Dimensions.get("screen").width, height: "81.3%" }}>
+                            <FlashList
+                                estimatedItemSize={100}
+                                data={allTasks.tasks}
+                                renderItem={({ item }) =>
+                                    <TaskTree
+                                        key={item.id}
+                                        mainTaskId={item.id}
+                                        mainTaskName={item.title}
+                                        color={item.primary_color}
+                                        data={item.data}
+                                        dueDate={item.dueDate}
+                                        taskCreatDay={item.createDate}
+                                    />
+                                }
+
                             />
-                        ))
+                        </View>
                     ) : !allTasks.loading ? (
                         <View style={styles.emptyContainer}>
                             <Text style={styles.emptyText}>Empty</Text>
@@ -185,8 +181,8 @@ const AllTask = () => {
                         </>
                     )}
                 </View>
-            </ScrollView>
-        </View>
+            </SafeAreaView>
+        </SafeAreaProvider>
     );
 
 }
@@ -194,29 +190,13 @@ const AllTask = () => {
 
 
 const styles = StyleSheet.create({
-    outerContainer: {
+    safeArea: {
         flex: 1,
-        width: '100%',
         backgroundColor: '#1A182C',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        height: 'auto',
-    },
-    addButtonContainer: {
-        width: 64,
-        height: 64,
-        position: 'absolute',
-        zIndex: 5,
-        borderRadius: 12,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    container: {
-        flex: 1,
-        width: '100%',
         padding: 20,
-        marginTop: -64,
+        paddingTop: StatusBar.currentHeight || 0,
     },
     searchContainer: {
         width: '100%',
@@ -224,6 +204,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#222239',
         borderRadius: 12,
         marginBottom: 24,
+        marginTop: 20,
         position: 'relative',
         justifyContent: 'center',
     },
@@ -243,6 +224,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    container: {
+        flex: 1,
+        width: '100%',
+        padding: 20,
+        marginTop: -64,
+    },
     clearIconContainer: {
         width: 64,
         height: 64,
@@ -253,13 +240,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     tasksListContainer: {
-        flexDirection: 'column',
-        width: '100%',
-        height: 'auto',
+        height: '100%',
         overflow: 'hidden',
         justifyContent: 'flex-start',
         alignItems: 'flex-start',
-        gap: 14, // Note: Ensure your React Native version supports 'gap'
+        gap: 14,
         marginBottom: 90,
     },
     emptyContainer: {

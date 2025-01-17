@@ -24,7 +24,6 @@ const ColorPickerSheet = React.memo(() => {
 
     return (
         <ActionSheet containerStyle={styles.sheetContainer}
-            closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
             closable={true}
             keyboardHandlerEnabled={false}
         >

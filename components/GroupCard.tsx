@@ -157,6 +157,7 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 18,
         fontWeight: '600',
+        maxWidth: '81%',
     },
     colorIndicator: {
         width: 30,

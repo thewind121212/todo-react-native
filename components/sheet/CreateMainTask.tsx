@@ -109,8 +109,7 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
   return (
     <ActionSheet
       containerStyle={styles.actionSheetContainer}
-      closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
-      onOpen={() => {
+      onBeforeShow={() => {
         if (payload?.type !== "editHabit" && payload?.type !== "editTask") {
           resetState()
           setIsSheetDirty(false);
