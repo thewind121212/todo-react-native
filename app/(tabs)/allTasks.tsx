@@ -1,3 +1,4 @@
+
 import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -273,5 +274,8 @@ const styles = StyleSheet.create({
         color: '#94a3b8',
     },
 });
+
+
+
 
 export default AllTask

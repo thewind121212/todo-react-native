@@ -8,6 +8,7 @@ import { useSubTaskContext } from '@/store/contextViewSub';
 import { SheetManager } from 'react-native-actions-sheet';
 
 
+
 type Props = {
     cardContent: string,
     taskItemId: number,
@@ -18,10 +19,12 @@ type Props = {
     setDoneOutFunc?: (id: number) => void
 }
 
-const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { } }: Props) => {
+const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { },
+}: Props) => {
 
     const [isDone, setIsDone] = useState(false)
     const { delTasks } = useSubTaskContext();
+
 
 
 
@@ -76,7 +79,15 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
             }
             if (index === 0) {
                 // Edit Task Item
-                SheetManager.show('create-sub-task', { payload: { isEdit: true, subTaskId: taskItemId, title: cardContent  } });
+                SheetManager.show('create-sub-task', {
+                    payload: {
+                        type: 'edit',
+                        mainTaskId: null,
+                        subTaskId: taskItemId,
+                        title: cardContent,
+                        color: primaryColor,
+                    }
+                });
             }
         },
         [taskItemId]

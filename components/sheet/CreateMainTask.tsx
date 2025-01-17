@@ -13,7 +13,6 @@ import { useSQLiteContext } from "expo-sqlite";
 import { calcRemainTimePercent, getCurrentDateTime } from "@/utils/helper";
 import { MainTaskType } from "@/types/appTypes";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { dismiss } from "expo-router/build/global-state/routing";
 import { runOnJS } from "react-native-reanimated";
 
 function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
@@ -87,10 +86,6 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
     }
   }, [name, dayPick, color, createType, db, payload]);
 
-  const handleOnCloseSheet = useCallback(() => {
-    setIsSheetDirty(false);
-    resetState();
-  }, [resetState]);
 
   const isIncludesInColorInit = useMemo(() => {
     return colorData.INIT_COLOR_PICKER.includes(color);
@@ -114,8 +109,13 @@ function CreateMainTask({ payload }: SheetProps<"create-main-task">) {
   return (
     <ActionSheet
       containerStyle={styles.actionSheetContainer}
-      onBeforeClose={handleOnCloseSheet}
       closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
+      onOpen={() => {
+        if (payload?.type !== "editHabit" && payload?.type !== "editTask") {
+          resetState()
+          setIsSheetDirty(false);
+        }
+      }}
       keyboardHandlerEnabled={true}
     >
       <GestureDetector gesture={tapGesture}>

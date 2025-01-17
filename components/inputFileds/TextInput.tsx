@@ -1,4 +1,4 @@
-import { StyleSheet,  TextInput as RNTextInput } from 'react-native'
+import { StyleSheet, TextInput as RNTextInput } from 'react-native'
 import React from 'react'
 import { useCreateMainTaskStore } from '@/store/createMainTask'
 
@@ -10,11 +10,11 @@ interface Props {
 
 const TextInput: React.FC<Props> = ({ placeHolder = "Place Holder Not Found", isSheetDirty }) => {
     const [foucs, setFocus] = React.useState(false)
-    const { name, setName } = useCreateMainTaskStore()
+    const { name, setName, color } = useCreateMainTaskStore()
 
     return (
         <RNTextInput
-            style={[styles.input, { borderBottomColor: (isSheetDirty && name.length === 0) ? "#F67280" : (foucs || name.length > 0) ? "#7068FF" : "#BBBBD4" }]}
+            style={[styles.input, { borderBottomColor: (isSheetDirty && name.length === 0) ? "#F67280" : (foucs || name.length > 0 || color) ? (color !== '' ? color : '#7068FF') : "#BBBBD4" }]}
             placeholder={isSheetDirty && name.length === 0 ? "Name task require" : placeHolder}
             keyboardType="default"
             value={name}

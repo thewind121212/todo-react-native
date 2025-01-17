@@ -7,13 +7,16 @@ import { create } from 'zustand';
 interface subItemState {
     tasks: TaskItemQueryType[];
     loading: boolean;
+    mountOn: 'tab' | 'sheet';
 }
 
 
 interface subItemActions {
-    setTasks: (tasks: TaskItemQueryType[], loading: boolean) => void;
+    setTasks: (tasks: TaskItemQueryType[], loading: boolean, mountOn?: 'tab' | 'sheet') => void;
     delTasks: (id: number) => void;
     editTasks: (id: number, title: string) => void;
+    setLoading: (loading: boolean) => void;
+    setMountOn: (mountOn: 'tab' | 'sheet') => void;
 }
 
 
@@ -24,7 +27,9 @@ export const useSubTaskContext = create<subItemState & subItemActions>(
         return {
             tasks: [],
             loading: true,
-            setTasks: (tasks, loading) => set({ tasks, loading }),
+            mountOn: 'tab',
+            setTasks: (tasks, loading, mountOn) => set(state => ({ tasks, loading, mountOn: mountOn ? mountOn : state.mountOn })),
+            setLoading: (loading) => set({ loading }),
             delTasks(id) {
                 set(state => {
                     return {
@@ -33,6 +38,7 @@ export const useSubTaskContext = create<subItemState & subItemActions>(
                     }
                 })
             },
+            setMountOn: (mountOn) => set(() => ({ mountOn })),
             editTasks(id, title) {
                 set(state => {
                     return {

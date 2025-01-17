@@ -5,7 +5,7 @@ import Button from '../Button';
 import ColorPicker from '../inputFileds/ColorPicker';
 import colorData from "../../data/colors.json";
 
-const ColorPickerSheet = () => {
+const ColorPickerSheet = React.memo(() => {
 
     const renderColorSection = (title: string, colors: string[]) => (
         <>
@@ -21,9 +21,11 @@ const ColorPickerSheet = () => {
         </>
     );
 
+
     return (
         <ActionSheet containerStyle={styles.sheetContainer}
             closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
+            closable={true}
             keyboardHandlerEnabled={false}
         >
             <View style={styles.container}>
@@ -46,7 +48,7 @@ const ColorPickerSheet = () => {
             </View>
         </ActionSheet>
     );
-};
+});
 
 export default ColorPickerSheet;
 

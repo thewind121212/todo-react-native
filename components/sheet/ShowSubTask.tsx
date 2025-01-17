@@ -1,23 +1,22 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSubTaskContext } from '@/store/contextViewSub';
+import { TaskItemQueryType } from '@/types/appTypes';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
+import { useSQLiteContext } from 'expo-sqlite';
+import { Skeleton } from 'moti/skeleton';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { RefreshControl, StyleSheet, Text, View } from 'react-native';
+import ActionSheet, { ActionSheetRef, SheetManager, SheetProps } from 'react-native-actions-sheet';
 import {
+    Directions,
     Gesture,
     GestureDetector,
-    Directions,
     Pressable,
 } from 'react-native-gesture-handler';
-import { StyleSheet, View, Text, RefreshControl } from 'react-native';
-import ActionSheet, { ActionSheetRef, SheetManager, SheetProps } from 'react-native-actions-sheet';
+import Animated, { interpolate, LinearTransition, runOnJS, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useAnimatedReaction, useSharedValue, runOnJS, LinearTransition, useAnimatedStyle, withTiming, interpolate, withRepeat, withDelay } from 'react-native-reanimated';
-import Entypo from '@expo/vector-icons/Entypo';
 import BlockHeader from '../BlockHeader';
-import { useSQLiteContext } from 'expo-sqlite';
-import { TaskItemQueryType } from '@/types/appTypes';
 import TaskItem from '../TaskItem';
-import { Skeleton } from 'moti/skeleton';
-import { SHEET_TOOGE_ANIMATION } from '@/config/animation';
-import { useSubTaskContext } from '@/store/contextViewSub';
 
 
 const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
@@ -30,7 +29,7 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
     }>({ y: 0, opacity: 100 })
     const [index, setIndex] = useState<number>(0)
     const mountRef = useRef<boolean>(false)
-    const { tasks, setTasks, loading } = useSubTaskContext();
+    const { tasks, setTasks, loading, setLoading } = useSubTaskContext();
 
 
 
@@ -74,11 +73,11 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
                     });
 
 
-                    setTasks(habit, false);
+                    setTasks(habit, false, 'sheet');
 
                 }
             } catch (error) {
-                setTasks([], false);
+                setTasks([], false, 'sheet');
             }
         }
 
@@ -159,12 +158,8 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
             newHabit.unshift(updatedTask);
         }
 
-        const newTasks = {
-            ...tasks,
-            allSubTasks: newHabit
-        }
 
-        setTasks(newTasks, loading);
+        setTasks(newHabit, loading);
     };
 
 
@@ -180,13 +175,6 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
         />
     );
 
-    const subTaskAction = (task: TaskItemQueryType, type: 'create' | 'edit') => {
-        if (type === 'create') {
-            const newTasks =
-                [...[task, ...tasks]]
-            setTasks(newTasks, loading);
-        }
-    }
 
 
     return (
@@ -194,7 +182,10 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
             snapPoints={[60, 102]}
             initialSnapIndex={0}
             onSnapIndexChange={setIndex}
-            closeAnimationConfig={{ ...SHEET_TOOGE_ANIMATION }}
+            closeAnimationConfig={{ stiffness: 1000, damping: 500, mass: 5, overshootClamping: false, restDisplacementThreshold: 0.01, restSpeedThreshold: 0.01 }}
+            onClose={() => {
+                setLoading(true)
+            }}
             keyboardHandlerEnabled={false}
             ref={sheetRef}
         >
@@ -223,11 +214,10 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
                                 isShowButton={true}
                                 buttonEvent={() => SheetManager.show('create-sub-task', {
                                     payload: {
-                                        siblingTask: tasks.length > 0 ? tasks[0] : {
-                                            id: 0, title: '', main_task_id: payload?.mainTaskId!, mainTaskId: payload?.mainTaskId!, completed: 0, primary_color: payload?.primaryColor!, dueDate: '',
-                                            createDate: '' as Date & string, updateDate: '' as Date & string, priority: 0, main_task_title: '', main_task_type: 'habit',
-                                        }, isEdit: false,
-                                        onSubmit: subTaskAction
+                                        type: 'create',
+                                        mainTaskId: tasks[0]?.main_task_id,
+                                        title: '',
+                                        color: tasks[0]?.primary_color,
                                     }
                                 })}
                             />
