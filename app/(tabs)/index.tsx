@@ -75,6 +75,7 @@ const Index = () => {
         const result = await db.getAllAsync<TaskItemQueryType>(`SELECT t.*, mt.type AS main_task_type, mt.color AS primary_color, mt.title AS main_task_title, mt.id AS main_task_id, mt.due_day AS dueDate , mt.create_date AS createDate
       FROM tasks t
       JOIN main_tasks mt ON t.main_task_id = mt.id
+      ORDER BY mt.create_date DESC
       `);
 
         if (result) {
@@ -196,6 +197,7 @@ const Index = () => {
 
 
   return (
+
     <ScrollView style={styles.container}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -289,7 +291,7 @@ const Index = () => {
         mainTitle="Recent Task"
         subTitle="see all"
         isShowBoxCount={true}
-        boxCount={12}
+        boxCount={modifiyTask.length}
       />
 
       <View style={styles.columnContainer}>

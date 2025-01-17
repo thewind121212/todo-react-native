@@ -14,7 +14,7 @@ interface propsType {
 }
 
 const DateInput = ({ isSheetDirty }: propsType) => {
-    const { dayPick, setDayPick } = useCreateMainTaskStore()
+    const { dayPick, setDayPick, color } = useCreateMainTaskStore()
 
     return (
         <Pressable style={styles.container}
@@ -24,7 +24,7 @@ const DateInput = ({ isSheetDirty }: propsType) => {
             }}
         >
             <View
-                style={[styles.wrapper, { borderColor: (isSheetDirty && dayPick.length === 0) ? "#F67280" : dayPick.length > 0 ? "#7068FF" : "#BBBBD4" }]}
+                style={[styles.wrapper, { borderColor: (isSheetDirty && dayPick.length === 0) ? "#F67280" : (dayPick.length > 0 || color) ? (color ? color : "#7068FF") : "#BBBBD4" }]}
             >
                 <Text style={[styles.title, { color: dayPick === "" ? "#BBBBD4" : "white" }]} >{(isSheetDirty && dayPick.length === 0) ? "Please choose date" : dayPick === "" ? "Select Due Day" : new Date(dayPick).toLocaleDateString('vi-VN', FORMAT_OPTIONS)} </Text>
             </View>

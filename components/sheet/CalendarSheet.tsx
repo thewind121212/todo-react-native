@@ -39,7 +39,6 @@ function CreateDueDay() {
 
     return (
         <ActionSheet containerStyle={styles.actionSheetContainer}
-            closeAnimationConfig={{ stiffness: 200, damping: 100, mass: 1 }}
             keyboardHandlerEnabled={false}
         >
             <View style={styles.contentContainer}>

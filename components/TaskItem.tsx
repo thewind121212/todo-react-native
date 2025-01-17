@@ -8,6 +8,7 @@ import { useSubTaskContext } from '@/store/contextViewSub';
 import { SheetManager } from 'react-native-actions-sheet';
 
 
+
 type Props = {
     cardContent: string,
     taskItemId: number,
@@ -18,10 +19,12 @@ type Props = {
     setDoneOutFunc?: (id: number) => void
 }
 
-const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { } }: Props) => {
+const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { },
+}: Props) => {
 
     const [isDone, setIsDone] = useState(false)
     const { delTasks } = useSubTaskContext();
+
 
 
 
@@ -76,7 +79,15 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
             }
             if (index === 0) {
                 // Edit Task Item
-                SheetManager.show('create-sub-task', { payload: { isEdit: true, subTaskId: taskItemId, title: cardContent  } });
+                SheetManager.show('create-sub-task', {
+                    payload: {
+                        type: 'edit',
+                        mainTaskId: null,
+                        subTaskId: taskItemId,
+                        title: cardContent,
+                        color: primaryColor,
+                    }
+                });
             }
         },
         [taskItemId]
@@ -102,7 +113,7 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
         >
             <View style={[styles.constainer, { paddingVertical: isSmallVersion ? 12 : 20, }]}>
                 <Animated.View style={[styles.wrapper, animatedStyle, { height: isSmallVersion ? 22 : 38, backgroundColor: isDone ? "#737379" : primaryColor, }]} />
-                <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none", }]}>{cardContent}</Text>
+                <Text style={[styles.cartContent, { color: isDone ? "#737379" : "#FFFFFF", textDecorationLine: isDone ? 'line-through' : "none" }]}>{cardContent}</Text>
                 <View style={styles.wrapperInner}>
                     <Pressable style={[styles.button, { borderColor: primaryColor, opacity: !isDone ? 1 : 0, width: isSmallVersion ? 22 : 24, height: isSmallVersion ? 22 : 24, }]}
                         onTouchStart={handlerCheckTask}

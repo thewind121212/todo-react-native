@@ -17,29 +17,37 @@ import { TaskItemQueryType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from 'expo-router';
+import { useSubTaskContext } from '@/store/contextViewSub';
+import { SheetManager } from 'react-native-actions-sheet';
+
+
 
 const AllHabits = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const [allTasks, setAllTasks] = useState<{
-    habit: TaskItemQueryType[];
-    loading: boolean;
-  }>({
-    habit: [],
-    loading: true,
-  });
   const [query, setQuery] = useState<string>('');
+  const { tasks, setTasks, loading, mountOn } = useSubTaskContext();
   const db = useSQLiteContext();
+
+  const navigator = useNavigation();
+
+  const focused = navigator.isFocused()
+
+
+
 
   const onRefresh = () => {
     setRefreshing(true);
   };
 
+
+
   const onTaskDone = (id: number) => {
-    const taskIndex = allTasks.habit.findIndex((task) => task.id === id);
+    const taskIndex = tasks.findIndex((task) => task.id === id);
 
     if (taskIndex === -1) return;
 
-    const currentTask = allTasks.habit[taskIndex];
+    const currentTask = tasks[taskIndex];
 
     const updatedTask: TaskItemQueryType = {
       ...currentTask,
@@ -47,8 +55,8 @@ const AllHabits = () => {
     };
 
     const newHabit = [
-      ...allTasks.habit.slice(0, taskIndex),
-      ...allTasks.habit.slice(taskIndex + 1),
+      ...tasks.slice(0, taskIndex),
+      ...tasks.slice(taskIndex + 1),
     ];
 
     if (updatedTask.completed === 1) {
@@ -57,13 +65,11 @@ const AllHabits = () => {
       newHabit.unshift(updatedTask);
     }
 
-    setAllTasks({
-      ...allTasks,
-      habit: newHabit,
-    });
+    setTasks(newHabit, loading);
   };
 
   useEffect(() => {
+    if (!focused && mountOn === 'tab') return
     async function getAllMainTask() {
       try {
         const result = await db.getAllAsync<TaskItemQueryType>(
@@ -84,25 +90,19 @@ const AllHabits = () => {
             }
           });
 
-          setAllTasks({
-            ...allTasks,
-            habit: habit,
-            loading: false,
-          });
+          setTasks(habit, false);
+
 
           setRefreshing(false);
         }
       } catch (error) {
-        setAllTasks({
-          ...allTasks,
-          loading: false,
-        });
+        setTasks([], false);
         setRefreshing(false);
       }
     }
 
     getAllMainTask();
-  }, [refreshing]);
+  }, [refreshing, focused]);
 
   const handleSearch = (e: string) => {
     setQuery(e);
@@ -110,12 +110,13 @@ const AllHabits = () => {
 
   const taskRender = useMemo(() => {
     if (query.length === 0) {
-      return allTasks.habit;
+      return tasks;
     }
-    return allTasks.habit.filter((task) =>
+    return tasks.filter((task) =>
       task.title.toLowerCase().includes(query.toLowerCase())
     );
-  }, [query, allTasks.habit]);
+  }, [query, tasks]);
+
 
   const renderItem = ({ item }: { item: TaskItemQueryType }) => (
     <TaskItem
@@ -161,30 +162,42 @@ const AllHabits = () => {
           subTitle="see all"
           isShowBoxCount={taskRender.length > 0}
           boxCount={taskRender.length}
+          buttonEvent={() => SheetManager.show('create-sub-task', {
+            payload: {
+              type: 'create-from-tab',
+              mainTaskId: null,
+              title: '',
+              color: '',
+            }
+          })}
           isShowButton={true}
         />
 
         {/* Task List */}
         <View style={styles.tasksContainer}>
-          <Animated.FlatList
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            data={taskRender}
-            renderItem={renderItem}
-            itemLayoutAnimation={LinearTransition}
-            contentContainerStyle={styles.flatListContent}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-          />
+          {
+            !loading && (
+              <Animated.FlatList
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                data={taskRender}
+                renderItem={renderItem}
+                itemLayoutAnimation={LinearTransition}
+                contentContainerStyle={styles.flatListContent}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+              />
+            )
+          }
           {/* Empty State */}
-          {taskRender.length === 0 && !allTasks.loading && (
+          {taskRender.length === 0 && !loading && (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>Empty</Text>
             </View>
           )}
           {/* Loading Skeletons */}
-          {allTasks.loading && (
+          {loading && (
             <View style={styles.skeletonContainer}>
               {[...Array(10).keys()].map((_, index) => (
                 <Skeleton
@@ -270,6 +283,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#222239',
     borderRadius: 12,
     marginBottom: 24,
+    marginTop: 20,
     position: 'relative',
     justifyContent: 'center',
   },

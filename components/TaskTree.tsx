@@ -24,6 +24,9 @@ const TaskTree = ({
 
     const [dataTasks, setDataTasks] = React.useState<TaskItemQueryType[]>(data);
 
+
+
+
     const overAllPercent = useMemo(() => {
         const completedTasks = dataTasks.filter((item) => item.completed).length;
         const totalTasks = dataTasks.length;
@@ -65,7 +68,7 @@ const TaskTree = ({
                     <View style={[styles.circle, { backgroundColor: color, top: 0 }]} />
                     <View style={[styles.circle, { backgroundColor: color, bottom: 0 }]} />
                 </View>
-                <View style={[styles.tasksList, { paddingLeft: 10 }]}>
+                <View style={[styles.tasksList, { paddingLeft: 10, position: 'relative', paddingTop: 18 }]}>
                     {dataTasks.map((item) => (
                         <TaskItem
                             key={item.id}
@@ -78,8 +81,8 @@ const TaskTree = ({
                         />
                     ))}
                 </View>
-            </View>
-        </View>
+            </View >
+        </View >
     );
 };
 
@@ -143,7 +146,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: "100%",
         height: "auto",
-        marginBottom: 20
+        marginBottom: 12,
+        paddingHorizontal: 20
     },
     tasksContainer: {
         flexDirection: 'row',
