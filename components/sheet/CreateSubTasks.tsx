@@ -4,6 +4,7 @@ import ActionSheet, { SheetManager, SheetProps } from "react-native-actions-shee
 import { useState, useCallback, useRef } from "react";
 
 import Button from "../Button";
+import React from 'react';
 import { useSQLiteContext } from "expo-sqlite";
 import { MainTaskType, TaskItemQueryType } from "@/types/appTypes";
 import { SHEET_TOOGE_ANIMATION } from "@/config/animation";
@@ -33,7 +34,7 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
         mainTaskId: number | null
         primaryColor: string | null
     }>({
-        name: payload?.title ?? "",
+        name: payload?.type === 'edit' && payload?.title ? payload.title : "",
         mainTaskName: "",
         mainTaskId: payload?.mainTaskId ?? null,
         primaryColor: payload?.color ?? null
@@ -54,8 +55,8 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
                     subTask.name,
                     payload.subTaskId
                 );
-
-                editTasks(payload.subTaskId, subTask.name)
+                payload.editOuterFunc ? payload.editOuterFunc(payload.subTaskId, subTask.name) :
+                    editTasks(payload.subTaskId, subTask.name)
                 SheetManager.hide('create-sub-task');
 
             }
@@ -86,32 +87,22 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
     }, [db, payload, subTask.name, subTask.mainTaskId, subTask.mainTaskName, subTask.primaryColor, tasks, loading, editTasks, setTasks]);
 
 
-    const onChoseMainTask = (mainTask: MainTaskType) => {
-        setSubTask({
-            ...subTask,
-            mainTaskId: mainTask.id,
-            mainTaskName: mainTask.title,
-            primaryColor: mainTask.color
-        })
-    }
+    const onChoseMainTask = useCallback((mainTask: MainTaskType) => {
+        {
+            setSubTask({
+                ...subTask,
+                mainTaskId: mainTask.id,
+                mainTaskName: mainTask.title,
+                primaryColor: mainTask.color
+            })
+        }
+    }, [subTask, setSubTask])
 
 
     return (
         <ActionSheet
             containerStyle={styles.actionSheetContainer}
-            onBeforeShow={() => {
-                if (payload?.type === 'edit' && payload?.title) {
-                    setSubTask({
-                        ...subTask,
-                        name: payload.title,
-                    })
-                } else {
-                    setSubTask({
-                        ...subTask,
-                        name: "",
-                    })
-                }
-            }}
+            keyboardHandlerEnabled={true}
         >
             <View style={styles.container}>
                 <Text style={styles.title}>{payload?.type === 'edit' ? "Edit" : "Create"} Sub Task</Text>
@@ -207,5 +198,5 @@ const styles = StyleSheet.create({
     }
 });
 
-export default CreateSubTask;
+export default React.memo(CreateSubTask)
 

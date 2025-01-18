@@ -41,6 +41,7 @@ declare module 'react-native-actions-sheet' {
         title: string,
         type: 'create' | 'edit' | 'create-from-tab',
         color: string,
+        editOuterFunc?: (id: number, title: string) => void,
       }
     }>;
     'show-sub-task': SheetDefinition<{

@@ -224,7 +224,7 @@ const ShowSubTaskSheet = ({ payload }: SheetProps<'show-sub-task'>) => {
                         </View>
                         {/* Task List */}
 
-                        <View style={[styles.tasksContainer, { maxHeight: index === 1 ? 'auto' : 300 }]}>
+                        <View style={[styles.tasksContainer, { maxHeight: index === 1 ? '84%' : 300 }]}>
                             {
                                 tasks.length > 0 && !loading && (
                                     <Animated.FlatList

@@ -55,33 +55,66 @@ const TaskTree = ({
         setDataTasks(newData);
     };
 
+
+    const removeTaskItem = (id: number) => {
+        const cloneData = [...dataTasks];
+        const newData: TaskItemQueryType[] = cloneData.filter((item) => item.id !== id);
+
+        setDataTasks(newData);
+    }
+
+    const editTasksItem = (id: number, title: string) => {
+        const cloneData = [...dataTasks];
+        const newData: TaskItemQueryType[] = cloneData.map((item) => {
+            if (item.id === id) {
+                return {
+                    ...item,
+                    title
+                };
+            }
+            return item;
+        });
+
+        setDataTasks(newData);
+    }
+
+
+
     return (
         <View style={styles.container}>
             <MainTask
                 mainTaskName={mainTaskName}
-                overAllPercent={overAllPercent}
+                overAllPercent={dataTasks.length > 0 ? overAllPercent : 100}
                 remainTimePercent={remainTimePercent}
                 primaryColor={color}
             />
-            <View style={[styles.tasksContainer, { marginTop: 12 }]}>
-                <View style={[styles.verticalLineContainer, { backgroundColor: color }]}>
-                    <View style={[styles.circle, { backgroundColor: color, top: 0 }]} />
-                    <View style={[styles.circle, { backgroundColor: color, bottom: 0 }]} />
-                </View>
-                <View style={[styles.tasksList, { paddingLeft: 10, position: 'relative', paddingTop: 18 }]}>
-                    {dataTasks.map((item) => (
-                        <TaskItem
-                            key={item.id}
-                            cardContent={item.title}
-                            primaryColor={color}
-                            isDoneProps={item.completed === 1}
-                            taskItemId={item.id}
-                            isUseSetDoneLocal={false}
-                            setDoneOutFunc={setDoneOutFunc}
-                        />
-                    ))}
-                </View>
-            </View >
+            {
+                dataTasks.length > 0 && (
+                    <View style={[styles.tasksContainer, { marginTop: 12 }]}>
+                        <View style={[styles.verticalLineContainer, { backgroundColor: color }]}>
+                            <View style={[styles.circle, { backgroundColor: color, top: 0 }]} />
+                            <View style={[styles.circle, { backgroundColor: color, bottom: 0 }]} />
+                        </View>
+                        <View style={[styles.tasksList, { paddingLeft: 10, position: 'relative', paddingTop: 18 }]}>
+                            {dataTasks.map((item) => (
+                                <TaskItem
+                                    key={item.id}
+                                    cardContent={item.title}
+                                    primaryColor={color}
+                                    isDoneProps={item.completed === 1}
+                                    taskItemId={item.id}
+                                    isUseSetDoneLocal={false}
+                                    setDoneOutFunc={setDoneOutFunc}
+                                    isUseRemoveLocal={false}
+                                    editOuterFunc={editTasksItem}
+                                    removeOuterFunc={removeTaskItem}
+                                />
+                            ))}
+                        </View>
+                    </View >
+
+                )
+            }
         </View >
     );
 };

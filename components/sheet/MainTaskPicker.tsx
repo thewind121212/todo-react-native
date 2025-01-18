@@ -46,7 +46,7 @@ const MainTaskPicker = ({ payload }: SheetProps<'main-task-picker'>) => {
             <View style={{ height: 'auto', display: "flex", flexDirection: "column", gap: 10 }}>
                 {
                     allMainTasks.map((item) => (
-                        <Pressable key={item.id} style={{ padding: 12, backgroundColor: selectedMainTask === item.id ? 'white' : "#BBBBD4", borderRadius: 10, width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", position: "relative" }}
+                        <Pressable key={item.id} style={{ padding: 12, paddingVertical: 18, backgroundColor: selectedMainTask === item.id ? 'white' : "#BBBBD4", borderRadius: 10, width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", position: "relative" }}
                             onPress={() => setSelectedMainTask(item.id)}>
                             <Text>{item.title}</Text>
                             {
