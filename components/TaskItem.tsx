@@ -17,9 +17,13 @@ type Props = {
     isSmallVersion?: boolean
     isUseSetDoneLocal?: boolean
     setDoneOutFunc?: (id: number) => void
+    removeOuterFunc?: (id: number) => void
+    editOuterFunc?: (id: number, newTitle: string) => void
+    isUseRemoveLocal?: boolean
 }
 
 const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDoneProps = false, taskItemId, isUseSetDoneLocal = true, setDoneOutFunc = () => { },
+    isUseRemoveLocal = true, removeOuterFunc = () => { }, editOuterFunc = () => { }
 }: Props) => {
 
     const [isDone, setIsDone] = useState(false)
@@ -75,7 +79,8 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
             if (index === 1) {
                 // Delete Task Item
                 db.execAsync(`DELETE FROM tasks WHERE id = ${taskItemId}`)
-                delTasks(taskItemId)
+                isUseRemoveLocal ? delTasks(taskItemId) : removeOuterFunc(taskItemId)
+
             }
             if (index === 0) {
                 // Edit Task Item
@@ -86,11 +91,12 @@ const TaskItem = ({ cardContent, primaryColor, isSmallVersion = false, isDonePro
                         subTaskId: taskItemId,
                         title: cardContent,
                         color: primaryColor,
+                        editOuterFunc: editOuterFunc
                     }
                 });
             }
         },
-        [taskItemId]
+        [taskItemId, cardContent, primaryColor, delTasks, removeOuterFunc]
     );
 
     useEffect(() => {

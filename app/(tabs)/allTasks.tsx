@@ -1,10 +1,9 @@
 
-import { View, StyleSheet, RefreshControl, ScrollView, TextInput, Dimensions, Pressable, Text, StatusBar } from 'react-native'
+import { View, StyleSheet, TextInput, Dimensions, Pressable, Text, StatusBar } from 'react-native'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import React, { useEffect, useMemo, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
-import AddButton from '@/components/AddButton';
 import { useSQLiteContext } from 'expo-sqlite';
 import { TaskItemNotHabitType, TaskItemQueryType } from '@/types/appTypes';
 import TaskTree, { TaskTreePlaceHolder } from '@/components/TaskTree';
@@ -12,7 +11,8 @@ import { FlashList } from "@shopify/flash-list";
 
 import { MotiView } from 'moti';
 
-import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
 
 const Spacer = ({ height = 16 }) => <MotiView style={{ height }} />
 
@@ -32,7 +32,7 @@ const AllTask = () => {
     const [query, setQuery] = useState<string>('');
     const db = useSQLiteContext();
 
-    const { width, height } = Dimensions.get('window');
+    const { height } = Dimensions.get('window');
 
     const onRefresh = () => {
         setRefreshing(true);
