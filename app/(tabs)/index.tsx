@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Modal } from 'react-native'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import BlockHeader from '@/components/BlockHeader'
 
 
@@ -13,6 +13,7 @@ import * as SQLite from "expo-sqlite";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { TaskItemNotHabitType, TaskItemQueryType } from '@/types/appTypes'
 import { Skeleton } from 'moti/skeleton'
+import { useNavigation } from 'expo-router'
 
 
 
@@ -30,6 +31,9 @@ const Index = () => {
   const db = SQLite.openDatabaseSync("todo.db");
   useDrizzleStudio(db);
   // DEBUGER
+
+  const navigator = useNavigation();
+  const focused = navigator.isFocused()
 
   const [allTasks, setAllTasks] = useState<{
     habit: TaskItemQueryType[]
@@ -124,7 +128,7 @@ const Index = () => {
 
     getAllMainTask()
 
-  }, [refreshing])
+  }, [refreshing, focused])
 
 
   const completedHabit = useMemo(() => {

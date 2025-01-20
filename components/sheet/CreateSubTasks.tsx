@@ -7,7 +7,6 @@ import Button from "../Button";
 import React from 'react';
 import { useSQLiteContext } from "expo-sqlite";
 import { MainTaskType, TaskItemQueryType } from "@/types/appTypes";
-import { SHEET_TOOGE_ANIMATION } from "@/config/animation";
 import { useSubTaskContext } from "@/store/contextViewSub";
 
 
@@ -56,7 +55,8 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
                     payload.subTaskId
                 );
                 payload.editOuterFunc ? payload.editOuterFunc(payload.subTaskId, subTask.name) :
-                    editTasks(payload.subTaskId, subTask.name)
+
+                editTasks(payload.subTaskId, subTask.name)
                 SheetManager.hide('create-sub-task');
 
             }
@@ -77,6 +77,7 @@ function CreateSubTask({ payload }: SheetProps<"create-sub-task">) {
                     title: subTask.name,
                     completed: 0,
                 }, ...tasks]
+
                 setTasks(newSubTask, loading)
                 SheetManager.hide('create-sub-task');
             }

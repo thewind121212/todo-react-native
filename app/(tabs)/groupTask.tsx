@@ -18,6 +18,7 @@ import { Skeleton } from 'moti/skeleton';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { calcRemainTimePercent } from '@/utils/helper';
+import CheckBox from '@/components/CheckBox';
 
 
 
@@ -25,7 +26,13 @@ const AllTasks = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [shouldRefresh, setShouldRefresh] = useState(true);
   const [pending, startTransition] = useTransition();
-  const [query, setQuery] = useState<string>('');
+  const [filter, setFilter] = useState<{
+    search: string;
+    type: 'all' | 'task' | 'habit';
+  }>({
+    search: '',
+    type: 'all',
+  });
   const [allTasks, setAllTasks] = useState<{
     allMainTasks: MainTaskType[];
     isLoading: boolean;
@@ -138,18 +145,18 @@ const AllTasks = () => {
   }, []);
 
   const handleSearch = useCallback((text: string) => {
-    setQuery(text.trimEnd());
-  }, []);
+    setFilter({ ...filter, search: text.trimEnd() });
+  }, [filter]);
 
   const taskRender = useMemo(() => {
-    if (query.length === 0) {
+    if (filter.search.length === 0 && filter.type === 'all') {
       return allTasks.allMainTasks;
     }
-    const lowerCaseQuery = query.toLowerCase();
+    const lowerCaseQuery = filter.search.toLowerCase();
     return allTasks.allMainTasks.filter(mainTaskItem =>
-      mainTaskItem.title.toLowerCase().includes(lowerCaseQuery)
+      mainTaskItem.title.toLowerCase().includes(lowerCaseQuery) && mainTaskItem.type === filter.type
     );
-  }, [query, allTasks.allMainTasks]);
+  }, [filter, allTasks.allMainTasks]);
 
   const renderItem = useCallback(({ item }: { item: MainTaskType }) => (
     <GroupCard
@@ -167,7 +174,7 @@ const AllTasks = () => {
           <TextInput
             style={styles.input}
             placeholder="Search"
-            value={query}
+            value={filter.search}
             onChangeText={handleSearch}
             placeholderTextColor={'#4D4C71'}
           />
@@ -176,9 +183,12 @@ const AllTasks = () => {
           </View>
           <Pressable
             style={styles.clearIconContainer}
-            onPress={() => setQuery('')}
+            onPress={() => setFilter({
+              search: '',
+              type: filter.type,
+            })}
           >
-            {query.length > 0 && (
+            {filter.search.length > 0 && (
               <FontAwesome6 name="xmark" size={24} color="white" />
             )}
           </Pressable>
@@ -193,6 +203,13 @@ const AllTasks = () => {
           isShowButton={true}
           buttonEvent={() => SheetManager.show('create-main-task', { payload: { type: "habit", onTaskCreate: onCreateMainTaskHandler } })}
         />
+
+        {/* filter optons  */}
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-start', width: '100%', marginBottom: 20, display: 'flex', gap: 20 }}>
+          <CheckBox label='All' value={filter.type === 'all'} onselect={() => setFilter({ ...filter, type: 'all' })} />
+          <CheckBox label='Task' value={filter.type === 'task'} onselect={() => setFilter({ ...filter, type: 'task' })} />
+          <CheckBox label='Habit' value={filter.type === 'habit'} onselect={() => setFilter({ ...filter, type: 'habit' })} />
+        </View>
 
         <View style={styles.tasksContainer}>
           {taskRender.length > 0 ? (
@@ -286,7 +303,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     gap: 14,
-    marginBottom: 150,
+    marginBottom: 170,
   },
   flatListContent: {
     gap: 14,

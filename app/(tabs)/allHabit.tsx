@@ -20,19 +20,25 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
 import { useSubTaskContext } from '@/store/contextViewSub';
 import { SheetManager } from 'react-native-actions-sheet';
+import CheckBox from '@/components/CheckBox';
 
 
 
 const AllHabits = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const [query, setQuery] = useState<string>('');
-  const { tasks, setTasks, loading, mountOn } = useSubTaskContext();
+  const [filter, setFilter] = useState<{
+    search: string;
+    type: 'all' | 'completed' | 'uncompleted';
+  }>({
+    search: '',
+    type: 'all',
+  });
+  const { tasks, setTasks, loading, mountOn, setMountOn } = useSubTaskContext();
+  const isFirstMounted = React.useRef<boolean>(false);
   const db = useSQLiteContext();
 
   const navigator = useNavigation();
-
   const focused = navigator.isFocused()
-
 
 
 
@@ -68,8 +74,13 @@ const AllHabits = () => {
     setTasks(newHabit, loading);
   };
 
+
   useEffect(() => {
-    if (!focused && mountOn === 'tab') return
+    if (!focused) return
+    if (mountOn === 'tab' && isFirstMounted.current) return
+    if (!isFirstMounted.current) {
+      isFirstMounted.current = true
+    }
     async function getAllMainTask() {
       try {
         const result = await db.getAllAsync<TaskItemQueryType>(
@@ -91,6 +102,7 @@ const AllHabits = () => {
           });
 
           setTasks(habit, false);
+          setMountOn('tab');
 
 
           setRefreshing(false);
@@ -98,6 +110,7 @@ const AllHabits = () => {
       } catch (error) {
         setTasks([], false);
         setRefreshing(false);
+        setMountOn('tab');
       }
     }
 
@@ -105,17 +118,19 @@ const AllHabits = () => {
   }, [refreshing, focused]);
 
   const handleSearch = (e: string) => {
-    setQuery(e);
+    setFilter({ ...filter, search: e });
   };
 
   const taskRender = useMemo(() => {
-    if (query.length === 0) {
+    if (filter.search.length === 0 && filter.type === 'all') {
       return tasks;
     }
-    return tasks.filter((task) =>
-      task.title.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [query, tasks]);
+
+    return tasks.filter((task) => (
+      (task.title.toLowerCase().includes(filter.search.toLowerCase()) && task.completed === (filter.type === 'completed' ? 1 : filter.type === 'uncompleted' ? 0 : task.completed))
+    ));
+
+  }, [filter, tasks]);
 
 
   const renderItem = ({ item }: { item: TaskItemQueryType }) => (
@@ -138,7 +153,7 @@ const AllHabits = () => {
           <TextInput
             style={styles.input}
             placeholder="Search"
-            value={query}
+            value={filter.search}
             onChangeText={handleSearch}
             placeholderTextColor="#4D4C71"
           />
@@ -147,9 +162,9 @@ const AllHabits = () => {
           </View>
           <Pressable
             style={styles.clearIconContainer}
-            onPressIn={() => setQuery('')}
+            onPressIn={() => setFilter({ ...filter, search: '' })}
           >
-            {query.length > 0 && (
+            {filter.search.length > 0 && (
               <FontAwesome6 name="xmark" size={24} color="white" />
             )}
           </Pressable>
@@ -172,6 +187,13 @@ const AllHabits = () => {
           })}
           isShowButton={true}
         />
+
+        {/* filter optons  */}
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-start', width: '100%', marginBottom: 20, display: 'flex', gap: 20 }}>
+          <CheckBox label='All' value={filter.type === 'all'} onselect={() => setFilter({ ...filter, type: 'all' })} />
+          <CheckBox label='Done' value={filter.type === 'completed'} onselect={() => setFilter({ ...filter, type: 'completed' })} />
+          <CheckBox label='Undone' value={filter.type === 'uncompleted'} onselect={() => setFilter({ ...filter, type: 'uncompleted' })} />
+        </View>
 
         {/* Task List */}
         <View style={styles.tasksContainer}>
@@ -315,12 +337,11 @@ const styles = StyleSheet.create({
   tasksContainer: {
     flexDirection: 'column',
     width: '100%',
-    height: 'auto',
     overflow: 'hidden',
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     gap: 14,
-    marginBottom: 150,
+    paddingBottom: 180,
   },
   flatListContent: {
     gap: 14,

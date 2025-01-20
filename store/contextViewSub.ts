@@ -7,7 +7,7 @@ import { create } from 'zustand';
 interface subItemState {
     tasks: TaskItemQueryType[];
     loading: boolean;
-    mountOn: 'tab' | 'sheet';
+    mountOn: 'tab' | 'sheet' | 'none';
 }
 
 
