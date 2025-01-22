@@ -1,8 +1,9 @@
-import { ColorValue, StyleSheet, Text, View } from 'react-native'
+import { ColorValue, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import CircularProgress from './CircleProgress'
 import { TaskItemNotHabitType } from '@/types/appTypes'
 import { Skeleton } from 'moti/skeleton'
+
 
 const OverviewHomeTask = ({
     tasks,
@@ -13,6 +14,9 @@ const OverviewHomeTask = ({
     fullPercent: number,
     taskRandom: Array<TaskItemNotHabitType & { completePercent: number }>
 }) => {
+
+
+
     return (
         <View style={styles.container}>
             <View style={styles.leftContainer}>

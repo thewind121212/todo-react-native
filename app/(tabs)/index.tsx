@@ -14,6 +14,7 @@ import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { TaskItemNotHabitType, TaskItemQueryType } from '@/types/appTypes'
 import { Skeleton } from 'moti/skeleton'
 import { useNavigation } from 'expo-router'
+import * as Notifications from 'expo-notifications';
 
 
 
@@ -63,6 +64,19 @@ const Index = () => {
       return 'Good Evening!';
     }
   };
+
+
+  async function scheduleNotification() {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Don't forget!",
+        body: 'You have something important to do!',
+        data: { data: 'goes here' },
+      },
+      trigger: { seconds: 2, repeats: false, channelId: 'default' },
+    });
+  }
+
 
 
   useEffect(() => {
@@ -224,6 +238,8 @@ const Index = () => {
         subTitle="see all"
         isShowBoxCount={false}
         boxCount={TOTAL_TASKS}
+        isShowButton={true}
+        buttonEvent={scheduleNotification}
       />
       {
         allTasks.habit.length > 0 && !allTasks.loading && (
