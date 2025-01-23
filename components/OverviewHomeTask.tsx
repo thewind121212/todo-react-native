@@ -3,6 +3,7 @@ import React from 'react'
 import CircularProgress from './CircleProgress'
 import { TaskItemNotHabitType } from '@/types/appTypes'
 import { Skeleton } from 'moti/skeleton'
+import useLocalNotification from '../hooks/useLocalNotification'
 
 
 const OverviewHomeTask = ({
@@ -15,7 +16,7 @@ const OverviewHomeTask = ({
     taskRandom: Array<TaskItemNotHabitType & { completePercent: number }>
 }) => {
 
-
+    const { handleScheduleNotification } = useLocalNotification()
 
     return (
         <View style={styles.container}>
@@ -64,11 +65,16 @@ const OverviewHomeTask = ({
                         { justifyContent: tasks.length > 0 ? 'center' : 'flex-start' }
                     ]}
                 >
-                    <TaskInfoRight
-                        percent={fullPercent / tasks.length}
-                        content="All task"
-                        color="#3068DF"
-                    />
+
+                    <Pressable
+                        onPressIn={handleScheduleNotification}
+                    >
+                        <TaskInfoRight
+                            percent={fullPercent / tasks.length}
+                            content="All task"
+                            color="#3068DF"
+                        />
+                    </Pressable>
                     {taskRandom[0] && (
                         <TaskInfoRight
                             percent={taskRandom[0].completePercent}
