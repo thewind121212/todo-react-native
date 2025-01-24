@@ -3,7 +3,7 @@ import React from 'react'
 import CircularProgress from './CircleProgress'
 import { TaskItemNotHabitType } from '@/types/appTypes'
 import { Skeleton } from 'moti/skeleton'
-import useLocalNotification from '../hooks/useLocalNotification'
+import useLocalNotification from '../hooks/useNotification'
 
 
 const OverviewHomeTask = ({
