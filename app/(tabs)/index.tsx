@@ -238,8 +238,7 @@ const Index = () => {
         subTitle="see all"
         isShowBoxCount={false}
         boxCount={TOTAL_TASKS}
-        isShowButton={true}
-        buttonEvent={scheduleNotification}
+        isShowButton={false}
       />
       {
         allTasks.habit.length > 0 && !allTasks.loading && (

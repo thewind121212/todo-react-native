@@ -1,7 +1,8 @@
-import { Dimensions, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import CircularProgress from '@/components/CircleProgress'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Link } from 'expo-router'
 
 // @ts-ignore
 import Cry from '@/assets/emoji/crying-svgrepo-com.svg'
@@ -35,34 +36,47 @@ const OverviewHomeHabit = React.memo(({ doneTask, allTasks }: { doneTask: number
 
     return (
         <View style={styles.overviewBlock}>
-            <View style={[styles.overviewLeftBlock, { width: (width * 1 / 2 - 20) - 6 }]}>
-                <View style={styles.overviewLeftBlockWrapper}>
-                    <View style={styles.emojiBlock}>
-                        {
-                            emojiRender(allTasks === 0 ? 100 : percentComplete, 54)
-                        }
+            <Link
+            href={'/(tabs)/allHabit?status=all'}
+            >
+                <View style={[styles.overviewLeftBlock, { width: (width * 1 / 2 - 20) - 6, height : (width * 1 / 2 - 20) - 6 }]}>
+                    <View style={styles.overviewLeftBlockWrapper}>
+                        <View style={styles.emojiBlock}>
+                            {
+                                emojiRender(allTasks === 0 ? 100 : percentComplete, 54)
+                            }
+                        </View>
+                        <View style={styles.taskRatio}>
+                            <Text style={styles.taskRatioTitle}>{doneTask}/{allTasks}</Text>
+                        </View>
                     </View>
-                    <View style={styles.taskRatio}>
-                        <Text style={styles.taskRatioTitle}>{doneTask}/{allTasks}</Text>
+                    <View style={styles.cirlcleProgress}>
+                        <CircularProgress progress={allTasks === 0 ? 100 : percentComplete} strokeWidth={7} strokeWidthFull={7} size={(160)} rotate='-90' color='#6861ED' />
+
                     </View>
                 </View>
-                <View style={styles.cirlcleProgress}>
-                    <CircularProgress progress={allTasks === 0 ? 100 : percentComplete} strokeWidth={7} strokeWidthFull={7} size={(160)} rotate='-90' color='#6861ED' />
-
-                </View>
-            </View>
-
+            </Link>
             <View style={[styles.overviewRightBlock, { width: (width * 1 / 2 - 20) - 6 }]}>
-                <View style={[styles.overViewRightBlockWrapper, { height: ((width * 1 / 2 - 20) - 6) / 2 - 6 }]} >
-                    <MaterialCommunityIcons name="progress-check" size={32} color="#fff" />
-                    <Text style={styles.rightBlockTitle}>{doneTask} Done</Text>
-                </View>
-                <View style={[styles.overViewRightBlockWrapper, { height: ((width * 1 / 2 - 20) - 6) / 2 - 6 }]} >
-                    <MaterialCommunityIcons name="progress-clock" size={32} color="#fff" />
-                    <Text style={styles.rightBlockTitle}>{allTasks - doneTask} </Text>
-                </View>
+                <Link
+                    href={'/(tabs)/allHabit?status=completed'}
+                >
+                    <View style={[styles.overViewRightBlockWrapper, { height: ((width * 1 / 2 - 20) - 6) / 2 - 6 }]}
+                    >
+                        <MaterialCommunityIcons name="progress-check" size={32} color="#fff" />
+                        <Text style={styles.rightBlockTitle}>{doneTask} Done</Text>
+                    </View>
+                </Link>
+
+                <Link
+                    href={'/(tabs)/allHabit?status=uncompleted'}
+                >
+                    <View style={[styles.overViewRightBlockWrapper, { height: ((width * 1 / 2 - 20) - 6) / 2 - 6 }]} >
+                        <MaterialCommunityIcons name="progress-clock" size={32} color="#fff" />
+                        <Text style={styles.rightBlockTitle}>{allTasks - doneTask} </Text>
+                    </View>
+                </Link>
             </View>
-        </View>
+        </View >
     )
 })
 

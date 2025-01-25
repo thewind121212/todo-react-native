@@ -17,7 +17,7 @@ import { TaskItemQueryType } from '@/types/appTypes';
 import { Skeleton } from 'moti/skeleton';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useSubTaskContext } from '@/store/contextViewSub';
 import { SheetManager } from 'react-native-actions-sheet';
 import CheckBox from '@/components/CheckBox';
@@ -26,13 +26,22 @@ import CheckBox from '@/components/CheckBox';
 
 const AllHabits = () => {
   const [refreshing, setRefreshing] = useState(false);
+  const { status } = useLocalSearchParams<{ status: 'uncompleted' | 'completed' }>();
   const [filter, setFilter] = useState<{
     search: string;
     type: 'all' | 'completed' | 'uncompleted';
   }>({
     search: '',
-    type: 'all',
+    type: 'all'
   });
+
+
+  useEffect(() => {
+    setFilter({ ...filter, type: status })
+  }, [status])
+
+
+
   const { tasks, setTasks, loading, mountOn, setMountOn } = useSubTaskContext();
   const isFirstMounted = React.useRef<boolean>(false);
   const db = useSQLiteContext();
