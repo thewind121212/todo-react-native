@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
@@ -31,9 +30,6 @@ export const checkAndRequestNotificationPermission = async () => {
             alert('Failed to get push token for push notification!');
             return;
         }
-        // Learn more about projectId:
-        // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
-        // EAS projectId is used here.
         try {
             const projectId =
                 Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
@@ -45,7 +41,6 @@ export const checkAndRequestNotificationPermission = async () => {
                     projectId,
                 })
             ).data;
-            console.log(token);
         } catch (e) {
             token = `${e}`;
         }

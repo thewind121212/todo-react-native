@@ -1,13 +1,15 @@
-import React, { useEffect, useCallback } from 'react';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useCallback, useMemo } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getGradientColor } from './MainTask';
-import { MainTaskType } from '@/types/appTypes';
+import { MainTaskType, TaskItemQueryType } from '@/types/appTypes';
 import ContextMenu from 'react-native-context-menu-view';
 import { SheetManager } from 'react-native-actions-sheet';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSQLiteContext } from 'expo-sqlite';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface Props {
     mainTaskItem: MainTaskType;
@@ -18,6 +20,7 @@ interface Props {
 const GroupCard = React.memo(({ mainTaskItem, deleteMainTaskHander, editMainTaskHander }: Props) => {
     const { title, color, remainTimePercent, type } = mainTaskItem;
     const isRenderProgress = true;
+    const db = useSQLiteContext();
 
 
 
@@ -39,6 +42,19 @@ const GroupCard = React.memo(({ mainTaskItem, deleteMainTaskHander, editMainTask
         )
     }, [])
 
+    useEffect(() => {
+        const query = db.getAllSync('SELECT * FROM tasks WHERE main_task_id = (?)', [mainTaskItem.id]);
+
+    }, [mainTaskItem.id])
+
+    const overAllPercent = useMemo<number>(() => {
+        if (type === 'habit') return 0
+        const dataTasks = db.getAllSync<TaskItemQueryType>('SELECT * FROM tasks WHERE main_task_id = (?)', [mainTaskItem.id]);
+        const completedTasks = dataTasks.filter((item) => item.completed).length;
+        const totalTasks = dataTasks.length;
+        return (completedTasks / totalTasks) * 100;
+    }, [mainTaskItem.id]);
+
 
     const handleContextMenuPress = (e: any) => {
         const index = e.nativeEvent.index;
@@ -58,6 +74,13 @@ const GroupCard = React.memo(({ mainTaskItem, deleteMainTaskHander, editMainTask
     const tapGesture = Gesture.Tap().onStart(() => {
         runOnJS(handlePress)();
     })
+
+
+
+
+    let isExpiry = useMemo(() => (remainTimePercent < 0 && overAllPercent !== 100), [remainTimePercent, overAllPercent])
+    if (type === 'habit') isExpiry = false;
+
     return (
         <ContextMenu
             actions={[
@@ -71,21 +94,24 @@ const GroupCard = React.memo(({ mainTaskItem, deleteMainTaskHander, editMainTask
             <GestureDetector gesture={tapGesture}>
                 <View style={styles.mainGroupTaskCard}>
                     <View style={styles.titleContainer}>
-                        <View style={styles.iconContainer}>
+                        <View style={[styles.iconContainer, { backgroundColor: isExpiry ? '#F67280' : overAllPercent === 100 ? '#55AD9B' : '#7068FF' }]}>
                             <View style={[styles.iconInnerContainer, { opacity: type === 'habit' ? 1 : 0 }]}>
                                 <MaterialIcons name="autorenew" size={24} color="white" />
                             </View>
                             <View style={[styles.iconInnerContainer, { opacity: type === 'task' ? 1 : 0 }]}>
-                                <MaterialIcons name="checklist" size={24} color="white" />
+                                {
+                                    isExpiry ? (<MaterialIcons name="timer-off" size={24} color="white" />) : overAllPercent === 100 ? (<FontAwesome name="check" size={22} color="white" />) : (
+                                        <MaterialIcons name="checklist" size={24} color="white" />
+                                    )
+                                }
                             </View>
                         </View>
-                        <Text style={styles.title}>{title}</Text>
+                        <Text style={[styles.title, { color: (isExpiry || overAllPercent === 100) ? '#737379' : 'white', textDecorationLine: (isExpiry || overAllPercent === 100) ? 'line-through' : 'none' }]}>{title}</Text>
                     </View>
-                    <View style={[styles.colorIndicator, { backgroundColor: color }]} />
-
+                    <View style={[styles.colorIndicator, { backgroundColor: (isExpiry || overAllPercent === 100) ? '#737379' : color }]} />
 
                     {isRenderProgress && (
-                        <View style={[styles.progressBarContainer, { width: Math.min((width - 40) * (remainTimePercent / 100), width) }]}>
+                        <View style={[styles.progressBarContainer, { width: Math.min((width - 40) * (Math.max(remainTimePercent, 0) / 100), width) }]}>
                             <View style={styles.progressBarBackground}>
                                 <LinearGradient
                                     colors={[...getGradientColor(remainTimePercent)] as [string, string, ...string[]]}

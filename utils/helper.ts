@@ -1,3 +1,5 @@
+import { TaskItemQueryType } from "@/types/appTypes";
+
 export const getCurrentDay = () => {
     const today = new Date()
 
@@ -11,6 +13,8 @@ export const calcRemainTimePercent = (dueDate: string, createDate: string) => {
     const today = new Date().getTime()
     return 100 - ((today - createDayTimeStamp) / (dueDayTimeStamp - createDayTimeStamp) * 100)
 }
+
+
 
 export function getCurrentDateTime() {
     const now = new Date();

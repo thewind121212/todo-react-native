@@ -66,15 +66,11 @@ const OverviewHomeTask = ({
                     ]}
                 >
 
-                    <Pressable
-                        onPressIn={handleScheduleNotification}
-                    >
-                        <TaskInfoRight
-                            percent={fullPercent / tasks.length}
-                            content="All task"
-                            color="#3068DF"
-                        />
-                    </Pressable>
+                    <TaskInfoRight
+                        percent={fullPercent / tasks.length}
+                        content="All task"
+                        color="#3068DF"
+                    />
                     {taskRandom[0] && (
                         <TaskInfoRight
                             percent={taskRandom[0].completePercent}

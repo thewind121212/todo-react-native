@@ -7,6 +7,7 @@ export interface MainTaskType {
     type: 'habit' | 'task';
     update_date: string;
     remainTimePercent: number;
+    completePercent: number;
 }
 
 export interface TaskItemType {

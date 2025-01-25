@@ -20,7 +20,6 @@ const useLocalNotification = () => {
         undefined
     );
 
-    console.log('projectId', Constants.expoConfig?.extra?.eas.projectId)
 
     const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
     const notificationListener = useRef<Notifications.EventSubscription>();
