@@ -34,6 +34,7 @@ This React Native Todo app is built using **Expo** and focuses heavily on **UI/U
 - React Native Gesture Handler
 - React Native Reanimated
 - React Native Safe Area Context
+- React Native SVG Transformer
 - React Native Screens
 
 ### Notifications
@@ -54,7 +55,6 @@ This React Native Todo app is built using **Expo** and focuses heavily on **UI/U
 ## DevTools & Testing
 - Jest
 - Jest-Expo
-- React Native SVG Transformer
 
 
 ## Features
